@@ -343,7 +343,7 @@ export class City {
           const color = new THREE.Color(palette[Math.floor(this.rng.next() * palette.length)]);
           if (harbor) color.multiplyScalar(0.82);
           buildings.push({ x, z, w, d, h, color });
-          if (h > 24) roofSlabs.push({ x, z, w, d, h, color });
+          roofSlabs.push({ x, z, w, d, h, color });
           const acCount = Math.floor(this.rng.range(0, 4));
           for (let a = 0; a < acCount; a++) {
             acs.push({
@@ -404,7 +404,7 @@ export class City {
   }
 
   private buildTollPlaza(): void {
-    const white = this.mat(new THREE.MeshStandardMaterial({ color: 0xd9d3c4, roughness: 0.6, metalness: 0.1 }));
+    const white = this.mat(new THREE.MeshStandardMaterial({ color: 0x9a968b, roughness: 0.72, metalness: 0.1 }));
     const dark = this.mat(new THREE.MeshStandardMaterial({ color: 0x1b2228, roughness: 0.5, metalness: 0.5 }));
     const amber = this.mat(new THREE.MeshBasicMaterial({ color: 0xf2b01e, toneMapped: false }));
 
@@ -548,10 +548,10 @@ export class City {
       waterGeo,
       this.mat(
         new THREE.MeshStandardMaterial({
-          color: 0x0a2533,
-          roughness: 0.16,
-          metalness: 0.75,
-          envMapIntensity: 1.4,
+          color: 0x102c3d,
+          roughness: 0.5,
+          metalness: 0.32,
+          envMapIntensity: 0.5,
           side: THREE.DoubleSide,
         }),
       ),

@@ -1,0 +1,133 @@
+/* =========================================================
+   雷电式竖版 HUD 追加件：卷轴进度 + 判定点
+   ========================================================= */
+.hud-stage-rail {
+  position: absolute;
+  right: 18px;
+  top: 31%;
+  bottom: 29%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 18px;
+  pointer-events: none;
+  font-family: var(--font-num);
+  font-size: 6px;
+  letter-spacing: 0.16em;
+  color: rgba(237, 230, 214, 0.35);
+}
+
+.hud-stage-rail > span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.hud-stage-rail .stage-track {
+  position: relative;
+  flex: 1;
+  width: 2px;
+  background: rgba(237, 230, 214, 0.12);
+}
+
+.hud-stage-rail .stage-track > i {
+  position: absolute;
+  left: -3px;
+  bottom: 0;
+  width: 8px;
+  height: 0%;
+  background: linear-gradient(0deg, var(--amber-deep), var(--amber));
+  box-shadow: 0 0 9px rgba(242, 176, 30, 0.4);
+  transition: height 0.2s linear;
+}
+
+.hud-stage-rail .stage-pct {
+  font-size: 7px;
+  font-weight: 500;
+  color: var(--amber);
+}
+
+.hud-focus {
+  position: absolute;
+  z-index: 3;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  pointer-events: none;
+  border: 1px solid rgba(95, 216, 232, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(95, 216, 232, 0.45);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.hud-focus::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: rgba(95, 216, 232, 0.9);
+}
+
+.hud-focus.is-on {
+  opacity: 0.95;
+}
+
+/* 目标栏移到左侧，把画面上方中央留给敌机/弹幕 */
+.shmup-hud .hud-objectives-side {
+  position: absolute;
+  left: 18px;
+  top: 176px;
+  width: 286px;
+  z-index: 2;
+  margin: 0;
+}
+
+.shmup-hud .hud-objectives-side .hud-obj-label {
+  font-size: 9px;
+}
+
+.shmup-hud .hud-objectives-side .hud-obj-head {
+  padding-bottom: 4px;
+}
+
+/* 竖版模式下不需要自由飞行 HUD 的准星/标记/速度 */
+.shmup-hud .hud-speed,
+.shmup-hud .hud-markers,
+.shmup-hud .hud-reticle,
+.shmup-hud .hud-cursor {
+  display: none;
+}
+
+.shmup-hud .hud-bottom-right {
+  gap: 5px;
+}
+
+.shmup-hud .hud-weapon {
+  width: 142px;
+}
+
+.shmup-hud .hud-weapon-special {
+  width: 168px;
+}
+
+.shmup-hud .hud-overdrive {
+  width: 68px;
+}
+
+@media (max-width: 1280px) {
+  .shmup-hud .hud-weapon {
+    width: 124px;
+  }
+  .shmup-hud .hud-weapon-special {
+    width: 150px;
+  }
+}
+
+@media (max-height: 760px) {
+  .hud-stage-rail {
+    top: 27%;
+    bottom: 26%;
+  }
+}

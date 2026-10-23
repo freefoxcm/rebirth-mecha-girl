@@ -80,6 +80,30 @@ export const PLAYER = {
   reviveHp: 0.5,
 };
 
+/** 雷电式竖版卷轴参数。 */
+export const SHMUP = {
+  fieldHeight: 160,
+  cameraY: 620,
+  altitude: 260,
+  speed: 120,
+  focusSpeed: 54,
+  playerZ: 52,
+  zLimit: 56,
+  xLimit: 128,
+  radius: 3,
+  gunRate: 11,
+  bulletDamage: 10,
+  bulletSpeed: 620,
+  bulletLife: 2.4,
+  enemyBulletSpeed: 178,
+  missileDamage: 66,
+  missileCharges: 3,
+  missileRecharge: 8,
+  missileCooldown: 0.7,
+  spawnZ: -88,
+  scrollSpeed: 18,
+};
+
 export const MEDAL_RULES: MedalRule[] = [
   { id: 'fullClear', name: '全歼', desc: '完成全部指定目标', alloy: 80 },
   { id: 'sweep', name: '扫荡', desc: '摧毁全部可选目标', alloy: 60 },

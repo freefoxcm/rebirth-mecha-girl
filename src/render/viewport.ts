@@ -98,7 +98,7 @@ export class Viewport {
     this.composer = new EffectComposer(this.renderer);
     this.renderPass = new RenderPass(new THREE.Scene(), this.camera);
     this.composer.addPass(this.renderPass);
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(1600, 900), 0.62, 0.55, 0.82);
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(1600, 900), 0.52, 0.4, 0.9);
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
     this.finalPass = new ShaderPass(finalShader);
@@ -116,7 +116,7 @@ export class Viewport {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, preset.dpr));
     this.renderer.shadowMap.enabled = preset.shadow;
     this.bloom.enabled = preset.bloom;
-    this.bloom.strength = quality === 'high' ? 0.66 : 0.38;
+    this.bloom.strength = quality === 'high' ? 0.55 : 0.3;
     this.finalPass.uniforms.uGrain.value = preset.grain;
     this.resize();
   }

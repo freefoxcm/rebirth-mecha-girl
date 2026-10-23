@@ -98,10 +98,10 @@ export class TitleScreen extends BaseScreen {
     const footer = div('title-footer');
     footer.innerHTML = `
       <div class="footer-hints">
-        <span><kbd>W</kbd><kbd>S</kbd> 油门</span>
-        <span><kbd>鼠标</kbd> 转向</span>
-        <span><kbd>左键</kbd> 开火</span>
-        <span><kbd>右键</kbd> 锁定</span>
+        <span><kbd>WASD</kbd> 移动</span>
+        <span><kbd>Shift</kbd> 低速</span>
+        <span><kbd>左键</kbd> 主炮</span>
+        <span><kbd>右键</kbd> 导弹</span>
         <span><kbd>E</kbd> 特技</span>
       </div>
       <div class="footer-serial">QIXIA / CV-07 · ${new Date().getFullYear()}</div>`;

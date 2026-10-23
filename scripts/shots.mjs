@@ -79,10 +79,16 @@ for (const state of states) {
     await page.waitForFunction('Boolean(window.__REBIRTH__)', { timeout: 60000 });
     await page.waitForSelector(state.wait, { timeout: 30000 });
     if (state.name === 'mission') {
-      await page.evaluate(() => window.__REBIRTH__.advance(0.6));
+      await page.evaluate(() => window.__REBIRTH__.advance(2.2, true));
+      await page.mouse.move(800, 700);
+      await page.mouse.down({ button: 'left' });
+      await new Promise((r) => setTimeout(r, 500));
+      await page.screenshot({ path: join(OUT, `${state.name}.png`) });
+      await page.mouse.up({ button: 'left' });
+    } else {
+      await new Promise((r) => setTimeout(r, state.delay ?? 1300));
+      await page.screenshot({ path: join(OUT, `${state.name}.png`) });
     }
-    await new Promise((r) => setTimeout(r, state.delay ?? 1300));
-    await page.screenshot({ path: join(OUT, `${state.name}.png`) });
     taken++;
     console.log(`✓ ${state.name}  ${url}`);
   } catch (err) {

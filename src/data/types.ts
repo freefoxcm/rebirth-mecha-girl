@@ -132,6 +132,17 @@ export interface BossSpec {
   phaseAt: [number, number];
 }
 
+export interface StageSpec {
+  /** 卷轴固定所在的 X 轴。 */
+  x: number;
+  /** 相机起点 Z，向 -Z 滚动。 */
+  startZ: number;
+  /** 相机终点 Z。 */
+  endZ: number;
+  /** 米/秒。 */
+  scrollSpeed: number;
+}
+
 export interface MissionSpec {
   id: MissionId;
   index: number;
@@ -140,6 +151,7 @@ export interface MissionSpec {
   subtitle: string;
   district: DistrictId;
   timeOfDay: TimeOfDay;
+  stage: StageSpec;
   spawn: { x: number; z: number; heading: number };
   zone: { x: number; z: number; radius: number };
   objectives: ObjectiveSpec[];

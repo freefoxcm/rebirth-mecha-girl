@@ -86,11 +86,10 @@ export class SettingsScreen extends BaseScreen {
     const controls = this.section('03', '操作说明', 'CONTROLS');
     controls.innerHTML += `
       <div class="key-grid">
-        <span><kbd>鼠标</kbd>转向 / 瞄准</span>
-        <span><kbd>W</kbd><kbd>S</kbd>油门</span>
-        <span><kbd>Shift</kbd>加力</span>
-        <span><kbd>左键</kbd>主炮</span>
-        <span><kbd>右键</kbd>锁定 / 导弹</span>
+        <span><kbd>WASD</kbd><kbd>方向键</kbd>八方向移动</span>
+        <span><kbd>Shift</kbd>低速 / 显示判定点</span>
+        <span><kbd>左键</kbd><kbd>空格</kbd>主炮</span>
+        <span><kbd>右键</kbd>追踪导弹</span>
         <span><kbd>E</kbd>机娘特技</span>
         <span><kbd>R</kbd>解限</span>
         <span><kbd>Esc</kbd>暂停</span>

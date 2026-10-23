@@ -116,8 +116,8 @@ export class BriefingScreen extends BaseScreen {
       </div>
       <div class="stat-bars">
         ${this.bar('装甲', stats.maxHp, 140)}
-        ${this.bar('极速', stats.speed, 200)}
-        ${this.bar('转向', stats.turn, 82)}
+        ${this.bar('移速', stats.speed, 200)}
+        ${this.bar('机动', stats.turn, 82)}
         ${this.bar('火力', this.girl.stats.gun, 1.2)}
       </div>`;
 

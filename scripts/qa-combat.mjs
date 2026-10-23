@@ -47,8 +47,11 @@ await shot('01-mission-start.png');
 console.log('start:', JSON.stringify(await state()));
 
 await page.evaluate(() => window.__REBIRTH__.advance(2.2, true));
-await wait(900);
+await page.mouse.move(800, 700);
+await page.mouse.down({ button: 'left' });
+await wait(450);
 await shot('02-combat.png');
+await page.mouse.up({ button: 'left' });
 console.log('combat:', JSON.stringify(await state()));
 console.log('runner:', JSON.stringify(await page.evaluate(() => {
   const r = window.__REBIRTH__.app.current.runner;

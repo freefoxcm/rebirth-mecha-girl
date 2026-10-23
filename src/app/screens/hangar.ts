@@ -368,8 +368,8 @@ export class HangarScreen extends BaseScreen {
     const st = this.app.save.getLoadoutStats(girl.id);
     stats.innerHTML = `
       ${this.statBar('装甲', st.maxHp, 150)}
-      ${this.statBar('极速', st.speed, 200)}
-      ${this.statBar('转向', st.turn, 82)}
+      ${this.statBar('移速', st.speed, 200)}
+      ${this.statBar('机动', st.turn, 82)}
       ${this.statBar('火力', st.gunDamage, 1.35)}`;
     this.detailHost.appendChild(stats);
 

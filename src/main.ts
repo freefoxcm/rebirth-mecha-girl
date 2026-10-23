@@ -7,6 +7,7 @@ import './styles/settings.css';
 import './styles/results.css';
 import './styles/hud.css';
 import './styles/mission.css';
+import './styles/shmup.css';
 import './styles/codex.css';
 import './styles/ending.css';
 import { App } from './app/app';
@@ -17,7 +18,7 @@ import { DialogueScreen } from './app/screens/dialogue';
 import { HangarScreen } from './app/screens/hangar';
 import { SettingsScreen } from './app/screens/settings';
 import { ResultsScreen } from './app/screens/results';
-import { MissionScreen } from './app/screens/mission';
+import { ShmupMissionScreen } from './app/screens/mission-shmup';
 import { CodexScreen } from './app/screens/codex';
 import { EndingScreen } from './app/screens/ending';
 
@@ -29,7 +30,7 @@ app.register('dialogue', (a) => new DialogueScreen(a));
 app.register('hangar', (a) => new HangarScreen(a));
 app.register('settings', (a) => new SettingsScreen(a));
 app.register('results', (a) => new ResultsScreen(a));
-app.register('mission', (a) => new MissionScreen(a));
+app.register('mission', (a) => new ShmupMissionScreen(a));
 app.register('codex', (a) => new CodexScreen(a));
 app.register('ending', (a) => new EndingScreen(a));
 

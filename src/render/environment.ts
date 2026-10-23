@@ -15,6 +15,7 @@ interface Preset {
   exposure: number;
   lightColor: number;
   cloudOpacity: number;
+  topIntensity: number;
 }
 
 const PRESETS: Record<TimeOfDay, Preset> = {
@@ -32,6 +33,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     exposure: 1.22,
     lightColor: 0xffce8c,
     cloudOpacity: 0.44,
+    topIntensity: 1.0,
   },
   blue: {
     zenith: 0x081226,
@@ -47,6 +49,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     exposure: 1.24,
     lightColor: 0xc0d8f0,
     cloudOpacity: 0.3,
+    topIntensity: 0.65,
   },
   dusk: {
     zenith: 0x231b33,
@@ -62,6 +65,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     exposure: 1.16,
     lightColor: 0xffa470,
     cloudOpacity: 0.4,
+    topIntensity: 0.75,
   },
   storm: {
     zenith: 0x0c1319,
@@ -77,6 +81,7 @@ const PRESETS: Record<TimeOfDay, Preset> = {
     exposure: 1.08,
     lightColor: 0xb8c8d0,
     cloudOpacity: 0.55,
+    topIntensity: 0.48,
   },
 };
 
@@ -128,6 +133,7 @@ export class WorldEnvironment {
   readonly scene: THREE.Scene;
   readonly hemi: THREE.HemisphereLight;
   readonly sun: THREE.DirectionalLight;
+  readonly topLight: THREE.DirectionalLight;
   readonly sunTarget: THREE.Object3D;
   private readonly sky: THREE.Mesh;
   private readonly skyMat: THREE.ShaderMaterial;
@@ -221,7 +227,12 @@ export class WorldEnvironment {
 
     this.hemi = new THREE.HemisphereLight(this.preset.hemiSky, this.preset.hemiGround, this.preset.hemiIntensity);
     scene.add(this.hemi);
-    scene.add(new THREE.AmbientLight(0xffe2c4, 0.55));
+    scene.add(new THREE.AmbientLight(0xffe2c4, 0.62));
+
+    // 竖版正交俯视时，低角度夕阳照不到屋顶；补一盏无阴影的顶光。
+    this.topLight = new THREE.DirectionalLight(0xfff0d8, this.preset.topIntensity);
+    this.topLight.position.set(0, 500, 0);
+    scene.add(this.topLight);
 
     this.sun = new THREE.DirectionalLight(this.preset.lightColor, this.preset.sunIntensity);
     this.sun.castShadow = true;
@@ -250,6 +261,7 @@ export class WorldEnvironment {
     this.skyMat.uniforms.uSunDir.value.copy(p.sunDir);
     this.sun.color.setHex(p.lightColor);
     this.sun.intensity = p.sunIntensity;
+    this.topLight.intensity = p.topIntensity;
     this.hemi.color.setHex(p.hemiSky);
     this.hemi.groundColor.setHex(p.hemiGround);
     this.hemi.intensity = p.hemiIntensity;
