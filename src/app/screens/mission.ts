@@ -49,6 +49,7 @@ export class MissionScreen extends BaseScreen {
 
   enter(params?: Record<string, unknown>): void {
     this.root.classList.add('mission-screen');
+    document.body.style.cursor = 'default';
     const missionKey = (params?.missionId ?? params?.mission) as MissionId | undefined;
     this.mission = MISSIONS[missionKey ?? 'm1'] ?? MISSIONS.m1;
     this.difficulty = (params?.difficulty as Difficulty) ?? 'normal';
@@ -174,6 +175,7 @@ export class MissionScreen extends BaseScreen {
     this.cutinHost?.remove();
     this.cutinHost = null;
     this.root.classList.add('is-started');
+    document.body.style.cursor = 'none';
     this.hud.banner('MISSION START', this.mission.title, this.mission.chapter);
     const girl = GIRLS[this.app.save.selectedGirl];
     this.hud.radio(girl.name, girl.quotes.launch);
@@ -266,7 +268,9 @@ export class MissionScreen extends BaseScreen {
   private togglePause(): void {
     if (!this.started || this.finished) return;
     this.paused = !this.paused;
+    document.body.style.cursor = this.paused ? 'default' : 'none';
     if (this.paused) {
+      this.hud?.setPointer(0, 0, false);
       this.pauseHost = div('pause-overlay');
       const panel = div('pause-panel panel');
       const snapshot = this.runner.getSnapshot();
@@ -310,6 +314,7 @@ export class MissionScreen extends BaseScreen {
     if (this.finished) return;
     this.finished = true;
     this.paused = false;
+    document.body.style.cursor = 'default';
     this.pauseHost?.remove();
     this.pauseHost = null;
     const backdrop = this.app.captureFrame();

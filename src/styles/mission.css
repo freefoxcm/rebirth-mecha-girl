@@ -1,9 +1,17 @@
 /* =========================================================
    空战关卡：变形过场、暂停
    ========================================================= */
-.mission-screen {
+/* 关卡根节点必须让指针穿透到 canvas，只有 HUD 按钮/弹层接收点击 */
+#ui > .mission-screen {
+  pointer-events: none;
   background: transparent;
   cursor: none;
+}
+
+.mission-screen .hud-pause,
+.mission-screen .pause-overlay,
+.mission-screen .launch-overlay {
+  pointer-events: auto;
 }
 
 .mission-screen .hud {

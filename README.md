@@ -103,6 +103,7 @@ node scripts/qa-boss.mjs      # Boss 三阶段 + 结局
 node scripts/qa-girls.mjs     # 五机娘模型/特技/两张地图
 node scripts/qa-combat.mjs    # 开火推进、强制通关、结算存档
 node scripts/qa-combat-extra.mjs # 锁定、解限、暂停、重生、失败结算
+node scripts/qa-mouse.mjs     # 真实鼠标点击/右键输入穿透验证
 ```
 
 调试入口：`?test=1` 会禁用 CSS 动画并暴露 `window.__REBIRTH__`（`state()`、`startMission()`、`winMission()`、`damageBoss()`、`advance(seconds, fire)` 等）。URL 参数 `?screen=title|hub|hangar|briefing|dialogue|mission|results|settings|codex|ending` 可直接进入指定界面。

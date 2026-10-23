@@ -16,6 +16,7 @@
 | `node scripts/qa-girls.mjs` | 五机娘机库 + 五种特技 + 港湾/金融区，通过 |
 | `node scripts/qa-combat.mjs` | 开火 22 发 13 命中 3 击杀，结算存档（合金/勋章/解锁/信赖），通过 |
 | `node scripts/qa-combat-extra.mjs` | 锁定发射导弹、解限、暂停、一次重生、二次死亡失败结算，通过 |
+| `node scripts/qa-mouse.mjs` | 关卡根节点指针穿透，真实鼠标左键开火/右键锁定输入，通过 |
 
 ## 2. 关键验收点
 
