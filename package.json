@@ -1,0 +1,27 @@
+{
+  "name": "rebirth-mecha-girl",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "重生之我和机娘杀疯了 — 3D 俯视角空战街机",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepare-art": "node scripts/prepare-art.mjs",
+    "shots": "node scripts/shots.mjs"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/three": "^0.186.0",
+    "puppeteer-core": "^25.16.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

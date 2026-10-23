@@ -1,0 +1,14 @@
+node_modules/
+dist/
+artifacts/
+.DS_Store
+*.local
+*.log
+
+# Raw reference media stays on disk but out of git (generated WebP assets are committed)
+reference_resources/**/*.png
+reference_resources/**/*.jpg
+reference_resources/**/*.mp4
+
+# ACL repair artefacts live outside the repo, this is just a guard
+_acl-repair-combat-go/

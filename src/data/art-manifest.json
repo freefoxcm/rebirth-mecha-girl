@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-10-23T03:17:02.857Z",
+  "girls": {
+    "qingluan": {
+      "poster": "assets/girls/qingluan/poster.webp",
+      "face": "assets/girls/qingluan/face.webp",
+      "bust": "assets/girls/qingluan/bust.webp",
+      "transform": "assets/girls/qingluan/transform.webp",
+      "stages": [
+        "assets/girls/qingluan/stage-1.webp",
+        "assets/girls/qingluan/stage-2.webp",
+        "assets/girls/qingluan/stage-3.webp",
+        "assets/girls/qingluan/stage-4.webp",
+        "assets/girls/qingluan/stage-5.webp",
+        "assets/girls/qingluan/stage-6.webp"
+      ],
+      "plane": "assets/girls/qingluan/plane.webp",
+      "humanoid": "assets/girls/qingluan/humanoid.webp",
+      "early": "assets/girls/qingluan/early.webp"
+    },
+    "akari": {
+      "poster": "assets/girls/akari/poster.webp",
+      "face": "assets/girls/akari/face.webp",
+      "bust": "assets/girls/akari/bust.webp",
+      "transform": "assets/girls/akari/transform.webp",
+      "stages": [
+        "assets/girls/akari/stage-1.webp",
+        "assets/girls/akari/stage-2.webp",
+        "assets/girls/akari/stage-3.webp",
+        "assets/girls/akari/stage-4.webp",
+        "assets/girls/akari/stage-5.webp",
+        "assets/girls/akari/stage-6.webp"
+      ],
+      "plane": "assets/girls/akari/plane.webp",
+      "humanoid": "assets/girls/akari/humanoid.webp",
+      "early": "assets/girls/akari/early.webp"
+    },
+    "haneul": {
+      "poster": "assets/girls/haneul/poster.webp",
+      "face": "assets/girls/haneul/face.webp",
+      "bust": "assets/girls/haneul/bust.webp",
+      "transform": "assets/girls/haneul/transform.webp",
+      "stages": [
+        "assets/girls/haneul/stage-1.webp",
+        "assets/girls/haneul/stage-2.webp",
+        "assets/girls/haneul/stage-3.webp",
+        "assets/girls/haneul/stage-4.webp",
+        "assets/girls/haneul/stage-5.webp",
+        "assets/girls/haneul/stage-6.webp"
+      ],
+      "plane": "assets/girls/haneul/plane.webp",
+      "humanoid": "assets/girls/haneul/humanoid.webp",
+      "early": "assets/girls/haneul/early.webp"
+    },
+    "astra": {
+      "poster": "assets/girls/astra/poster.webp",
+      "face": "assets/girls/astra/face.webp",
+      "bust": "assets/girls/astra/bust.webp",
+      "transform": "assets/girls/astra/transform.webp",
+      "stages": [
+        "assets/girls/astra/stage-1.webp",
+        "assets/girls/astra/stage-2.webp",
+        "assets/girls/astra/stage-3.webp",
+        "assets/girls/astra/stage-4.webp",
+        "assets/girls/astra/stage-5.webp",
+        "assets/girls/astra/stage-6.webp"
+      ],
+      "plane": "assets/girls/astra/plane.webp",
+      "humanoid": "assets/girls/astra/humanoid.webp",
+      "early": null
+    },
+    "snega": {
+      "poster": "assets/girls/snega/poster.webp",
+      "face": "assets/girls/snega/face.webp",
+      "bust": "assets/girls/snega/bust.webp",
+      "transform": "assets/girls/snega/transform.webp",
+      "stages": [
+        "assets/girls/snega/stage-1.webp",
+        "assets/girls/snega/stage-2.webp",
+        "assets/girls/snega/stage-3.webp",
+        "assets/girls/snega/stage-4.webp",
+        "assets/girls/snega/stage-5.webp",
+        "assets/girls/snega/stage-6.webp"
+      ],
+      "plane": "assets/girls/snega/plane.webp",
+      "humanoid": "assets/girls/snega/humanoid.webp",
+      "early": null
+    }
+  }
+}

@@ -1,0 +1,342 @@
+/* =========================================================
+   机娘档案
+   ========================================================= */
+.codex-screen {
+  background: #05080c;
+}
+
+.codex-bg {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center 24%;
+  filter: blur(26px) brightness(0.22) saturate(0.8);
+  transform: scale(1.05);
+}
+
+.codex-grid-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  background-image:
+    linear-gradient(rgba(95, 216, 232, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(95, 216, 232, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 40%, #000 15%, transparent 78%);
+}
+
+.codex-back {
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.codex-status {
+  font-family: var(--font-num);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: var(--faint);
+}
+
+.codex-head {
+  position: absolute;
+  top: 92px;
+  left: 40px;
+  right: 40px;
+  z-index: 4;
+}
+
+.codex-head h1 {
+  margin: 9px 0 7px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.codex-head p {
+  max-width: 880px;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--dim);
+}
+
+.codex-grid {
+  position: absolute;
+  top: 216px;
+  bottom: 28px;
+  left: 40px;
+  right: 40px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.codex-card {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
+  color: var(--bone);
+  border: 1px solid var(--line);
+  clip-path: var(--clip);
+  background: #0a0f15;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.codex-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(242, 176, 30, 0.5);
+}
+
+.codex-card-img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 16%;
+  transition:
+    transform 0.5s ease,
+    filter 0.3s ease;
+}
+
+.codex-card:hover .codex-card-img {
+  transform: scale(1.035);
+}
+
+.codex-card.is-locked .codex-card-img {
+  filter: blur(9px) brightness(0.35) saturate(0.5);
+}
+
+.codex-card-grad {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(4, 7, 10, 0.98) 0%, rgba(4, 7, 10, 0.55) 34%, transparent 68%),
+    linear-gradient(180deg, rgba(4, 7, 10, 0.55), transparent 28%);
+}
+
+.codex-card-index {
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  font-family: var(--font-num);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--amber);
+}
+
+.codex-card-body {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+}
+
+.codex-card-name {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.codex-card-name small {
+  font-family: var(--font-num);
+  font-size: 7px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+}
+
+.codex-card-role {
+  margin-top: 3px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+}
+
+.codex-card-trust {
+  display: flex;
+  gap: 3px;
+  margin-top: 8px;
+}
+
+.codex-card-trust i {
+  width: 16px;
+  height: 2px;
+  background: rgba(237, 230, 214, 0.16);
+}
+
+.codex-card-trust i.on {
+  background: var(--amber);
+}
+
+.codex-card-open {
+  position: absolute;
+  top: 13px;
+  right: 14px;
+  font-family: var(--font-num);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+}
+
+.codex-card-lock {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transform: translate(-50%, -50%);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* 档案详情 */
+.codex-detail {
+  width: min(980px, 92vw);
+  max-height: 88vh;
+  padding: 24px 26px 20px;
+  overflow-y: auto;
+}
+
+.codex-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.codex-detail-head h2 {
+  margin: 5px 0 2px;
+  font-size: 30px;
+  letter-spacing: 0.1em;
+}
+
+.codex-detail-head p {
+  margin: 0;
+  font-size: 9px;
+  color: var(--faint);
+}
+
+.codex-detail-index {
+  color: var(--amber);
+}
+
+.codex-detail-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.codex-art-block {
+  min-width: 0;
+}
+
+.codex-art-label {
+  display: block;
+  margin-bottom: 5px;
+  font-family: var(--font-num);
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+}
+
+.codex-art {
+  aspect-ratio: 1672 / 941;
+  background-color: #0a0f14;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid var(--line-soft);
+}
+
+.codex-detail-copy {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.codex-detail-copy > p {
+  margin: 0 0 10px;
+  font-size: 10px;
+  line-height: 1.9;
+  color: var(--dim);
+}
+
+.codex-special {
+  padding: 8px 10px;
+  background: rgba(242, 176, 30, 0.04);
+  border-left: 1px solid var(--amber);
+}
+
+.codex-special span {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--amber);
+}
+
+.codex-special p {
+  margin: 3px 0 0;
+  font-size: 9px;
+  color: var(--dim);
+}
+
+.codex-quote {
+  margin-top: 10px !important;
+  font-size: 11px !important;
+  color: var(--bone) !important;
+}
+
+.codex-detail-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--font-num);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+.codex-detail-actions .btn {
+  min-height: 34px;
+  padding: 0 16px;
+  font-size: 10px;
+}
+
+@media (max-width: 1100px) {
+  .codex-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-y: auto;
+    align-content: start;
+  }
+  .codex-card {
+    aspect-ratio: 3 / 4;
+  }
+}
+
+@media (max-width: 760px) {
+  .codex-grid {
+    grid-template-columns: 1fr 1fr;
+    left: 20px;
+    right: 20px;
+  }
+  .codex-detail-body {
+    grid-template-columns: 1fr;
+  }
+}
