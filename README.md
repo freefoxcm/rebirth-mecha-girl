@@ -15,6 +15,8 @@ npm run dev
 
 打开终端里显示的地址（默认 <http://127.0.0.1:5173/>），建议 Chrome / Edge，全屏体验更佳。
 
+**在线试玩（GitHub Pages / CDN）：** <https://freefoxcm.github.io/rebirth-mecha-girl/>
+
 生产构建：
 
 ```bash
