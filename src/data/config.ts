@@ -2,7 +2,7 @@ import type { MedalRule, Settings } from './types';
 
 export const GAME_TITLE = '重生之我和机娘杀疯了';
 export const GAME_TITLE_EN = 'REBIRTH // SKY RAMPAGE';
-export const GAME_VERSION = '0.1.2';
+export const GAME_VERSION = '0.1.3';
 export const PILOT_NAME = '陆沉';
 export const CARRIER_NAME = '栖霞号';
 export const CITY_NAME = '临港市';

@@ -94,6 +94,27 @@ function groundTexture(): THREE.CanvasTexture {
       ctx.setLineDash([]);
     }
 
+    // 交叉口斑马线：远景下也能读出街道细节
+    for (let i = 0; i <= CELLS; i++) {
+      for (let j = 0; j <= CELLS; j++) {
+        const cx = -HALF + i * BLOCK;
+        const cz = -HALF + j * BLOCK;
+        const roadPx = (ROAD / WORLD) * 2048;
+        const stripePx = (2.2 / WORLD) * 2048;
+        const barPx = (10 / WORLD) * 2048;
+        ctx.fillStyle = 'rgba(235, 228, 210, 0.22)';
+        for (const side of [-1, 1]) {
+          for (let k = -2; k <= 2; k++) {
+            const off = k * (stripePx + 2);
+            ctx.fillRect(px(cx) - barPx + off, px(cz) + side * (roadPx / 2 + 4), barPx * 0.32, 7);
+            ctx.fillRect(px(cx) - barPx + off, px(cz) + side * (roadPx / 2 + 13), barPx * 0.32, 7);
+            ctx.fillRect(px(cx) + side * (roadPx / 2 + 4), px(cz) - barPx + off, 7, barPx * 0.32);
+            ctx.fillRect(px(cx) + side * (roadPx / 2 + 13), px(cz) - barPx + off, 7, barPx * 0.32);
+          }
+        }
+      }
+    }
+
     // 海湾水面
     ctx.beginPath();
     ctx.moveTo(px(250), px(1200));
@@ -223,6 +244,27 @@ function billboardTexture(brand: (typeof BRANDS)[number]): THREE.CanvasTexture {
   return canvasTexture(canvas);
 }
 
+function helipadTexture(): THREE.CanvasTexture {
+  const canvas = makeCanvas(256, 256, (ctx) => {
+    ctx.clearRect(0, 0, 256, 256);
+    ctx.fillStyle = 'rgba(20, 26, 27, 0.9)';
+    ctx.beginPath();
+    ctx.arc(128, 128, 118, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(237, 230, 214, 0.85)';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(128, 128, 102, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(237, 230, 214, 0.92)';
+    ctx.font = '700 150px Bahnschrift, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('H', 128, 132);
+  });
+  return canvasTexture(canvas);
+}
+
 function signTexture(text: string): THREE.CanvasTexture {
   const canvas = makeCanvas(1024, 256, (ctx) => {
     ctx.fillStyle = '#e8e1d0';
@@ -315,6 +357,11 @@ export class City {
     const buildings: B[] = [];
     const roofSlabs: B[] = [];
     const acs: Array<{ x: number; y: number; z: number; s: number }> = [];
+    const helipads: Array<{ x: number; y: number; z: number; rot: number }> = [];
+    const antennas: Array<{ x: number; y: number; z: number; h: number }> = [];
+    const tanks: Array<{ x: number; y: number; z: number; r: number; h: number }> = [];
+    const solars: Array<{ x: number; y: number; z: number; w: number; d: number; rot: number }> = [];
+    const crowns: Array<{ x: number; y: number; z: number; w: number; d: number }> = [];
 
     const palette = [0xe1d9c8, 0xcfc6b4, 0xb9b2a2, 0xa9a89f, 0xd8cec0, 0x9fa7a8, 0xc7b9a4, 0x8f9a9e];
 
@@ -353,6 +400,19 @@ export class City {
               s: this.rng.range(1.2, 2.8),
             });
           }
+          if (h > 95 && w > 25 && d > 25 && helipads.length < 18 && this.rng.chance(0.32)) {
+            helipads.push({ x, y: h + 1.05, z, rot: this.rng.range(0, Math.PI * 2) });
+          }
+          if (h > 62 && antennas.length < 34 && this.rng.chance(0.34)) {
+            antennas.push({ x: x + this.rng.range(-w * 0.28, w * 0.28), y: h + 0.6, z: z + this.rng.range(-d * 0.28, d * 0.28), h: this.rng.range(4, 13) });
+          }
+          if (h > 18 && h < 78 && tanks.length < 26 && this.rng.chance(0.22)) {
+            tanks.push({ x: x + this.rng.range(-w * 0.26, w * 0.26), y: h + 0.7, z: z + this.rng.range(-d * 0.26, d * 0.26), r: this.rng.range(1.4, 2.6), h: this.rng.range(2, 4.2) });
+          }
+          if (h > 20 && h < 75 && solars.length < 28 && this.rng.chance(0.2)) {
+            solars.push({ x: x + this.rng.range(-w * 0.25, w * 0.25), y: h + 0.76, z: z + this.rng.range(-d * 0.25, d * 0.25), w: this.rng.range(5, 11), d: this.rng.range(4, 8), rot: this.rng.range(0, Math.PI) });
+          }
+          if (h > 120 && crowns.length < 12) crowns.push({ x, y: h + 4, z, w: w * 0.62, d: d * 0.62 });
           if (h > 86) this.colliders.push({ x, z, w, d, h });
         }
       }
@@ -397,6 +457,98 @@ export class City {
     acMesh.instanceMatrix.needsUpdate = true;
     acMesh.castShadow = true;
     this.group.add(acMesh);
+
+    if (quality !== 'low') {
+      // 停机坪 + H 标识
+      const padGeo = this.track(new THREE.CylinderGeometry(5.4, 5.5, 0.35, 20));
+      const padMat = this.mat(new THREE.MeshStandardMaterial({ color: 0x2c3335, roughness: 0.7, metalness: 0.35 }));
+      const pads = new THREE.InstancedMesh(padGeo, padMat, Math.max(1, helipads.length));
+      const hTex = this.tex(helipadTexture());
+      const hMat = this.mat(new THREE.MeshBasicMaterial({ map: hTex, transparent: true, side: THREE.DoubleSide, toneMapped: false, depthWrite: false }));
+      const hGeo = this.track(new THREE.PlaneGeometry(9.2, 9.2));
+      const hs = new THREE.InstancedMesh(hGeo, hMat, Math.max(1, helipads.length));
+      helipads.forEach((heli, i) => {
+        dummy.position.set(heli.x, heli.y, heli.z);
+        dummy.rotation.set(0, heli.rot, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        pads.setMatrixAt(i, dummy.matrix);
+        dummy.rotation.set(-Math.PI / 2, 0, heli.rot);
+        dummy.position.set(heli.x, heli.y + 0.22, heli.z);
+        dummy.updateMatrix();
+        hs.setMatrixAt(i, dummy.matrix);
+      });
+      pads.instanceMatrix.needsUpdate = true;
+      hs.instanceMatrix.needsUpdate = true;
+      pads.castShadow = true;
+      this.group.add(pads, hs);
+
+      // 天线
+      if (antennas.length > 0) {
+        const geo = this.track(new THREE.CylinderGeometry(0.14, 0.25, 1, 5));
+        const mat = this.mat(new THREE.MeshStandardMaterial({ color: 0x3d4648, roughness: 0.5, metalness: 0.7 }));
+        const mesh = new THREE.InstancedMesh(geo, mat, antennas.length);
+        antennas.forEach((a, i) => {
+          dummy.position.set(a.x, a.y + a.h / 2, a.z);
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(1, a.h, 1);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(i, dummy.matrix);
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.castShadow = true;
+        this.group.add(mesh);
+      }
+
+      // 屋顶水箱
+      if (tanks.length > 0) {
+        const geo = this.track(new THREE.CylinderGeometry(1, 1, 1, 10));
+        const mat = this.mat(new THREE.MeshStandardMaterial({ color: 0x7a7b72, roughness: 0.72, metalness: 0.3 }));
+        const mesh = new THREE.InstancedMesh(geo, mat, tanks.length);
+        tanks.forEach((t, i) => {
+          dummy.position.set(t.x, t.y + t.h / 2, t.z);
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(t.r, t.h, t.r);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(i, dummy.matrix);
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.castShadow = true;
+        this.group.add(mesh);
+      }
+
+      // 屋顶光伏
+      if (solars.length > 0) {
+        const geo = this.track(new THREE.BoxGeometry(1, 0.16, 1));
+        const mat = this.mat(new THREE.MeshStandardMaterial({ color: 0x1c3341, roughness: 0.28, metalness: 0.55 }));
+        const mesh = new THREE.InstancedMesh(geo, mat, solars.length);
+        solars.forEach((s, i) => {
+          dummy.position.set(s.x, s.y, s.z);
+          dummy.rotation.set(0, s.rot, 0);
+          dummy.scale.set(s.w, 1, s.d);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(i, dummy.matrix);
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+        this.group.add(mesh);
+      }
+
+      // 高层退台冠部
+      if (crowns.length > 0) {
+        const geo = this.track(new THREE.BoxGeometry(1, 1, 1));
+        const mat = this.mat(new THREE.MeshStandardMaterial({ color: 0x33434a, roughness: 0.5, metalness: 0.45 }));
+        const mesh = new THREE.InstancedMesh(geo, mat, crowns.length);
+        crowns.forEach((c, i) => {
+          dummy.position.set(c.x, c.y, c.z);
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(c.w, 8, c.d);
+          dummy.updateMatrix();
+          mesh.setMatrixAt(i, dummy.matrix);
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+        this.group.add(mesh);
+      }
+    }
   }
 
   isWater(x: number, z: number): boolean {
@@ -445,6 +597,21 @@ export class City {
       const barrier = new THREE.Mesh(this.track(new THREE.BoxGeometry(0.25, 0.25, 9)), white);
       barrier.position.set(x, 4.2, 4);
       this.group.add(barrier);
+      const signal = new THREE.Mesh(
+        this.track(new THREE.BoxGeometry(0.8, 0.8, 0.2)),
+        new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0x62ff9b : 0xff5046, toneMapped: false }),
+      );
+      signal.position.set(x, 3.9, -5.2);
+      this.group.add(signal);
+    }
+
+    // 广场边缘护栏
+    for (const z of [-32, 32]) {
+      for (let i = 0; i < 6; i++) {
+        const rail = new THREE.Mesh(this.track(new THREE.BoxGeometry(28, 0.8, 0.5)), dark);
+        rail.position.set(-530 + i * 56, 0.9, z);
+        this.group.add(rail);
+      }
     }
 
     // 顶部站名：横跨车道的屋顶灯箱，俯视可读
@@ -531,6 +698,46 @@ export class City {
     const train = new THREE.Mesh(this.track(new THREE.BoxGeometry(58, 3.2, 4.2)), glass);
     train.position.set(120, 17.2, -230);
     this.group.add(train);
+
+    // 金融区空中连廊：两座塔楼之间
+    const bridgeDx = 520 - 430;
+    const bridgeDz = -300 + 360;
+    const bridgeLen = Math.hypot(bridgeDx, bridgeDz);
+    const bridge = new THREE.Mesh(this.track(new THREE.BoxGeometry(bridgeLen, 4, 7)), glass);
+    bridge.position.set((430 + 520) / 2, 64, (-360 - 300) / 2);
+    bridge.rotation.y = Math.atan2(-bridgeDz, bridgeDx);
+    this.group.add(bridge);
+    const bridgeDeck = new THREE.Mesh(this.track(new THREE.BoxGeometry(bridgeLen, 0.6, 9)), stone);
+    bridgeDeck.position.set((430 + 520) / 2, 61.6, (-360 - 300) / 2);
+    bridgeDeck.rotation.y = Math.atan2(-bridgeDz, bridgeDx);
+    this.group.add(bridgeDeck);
+
+    // 单轨站台
+    const station = new THREE.Mesh(this.track(new THREE.BoxGeometry(34, 2, 14)), stone);
+    station.position.set(120, 20.5, -230);
+    this.group.add(station);
+    const stationRoof = new THREE.Mesh(this.track(new THREE.BoxGeometry(38, 0.8, 18)), glass);
+    stationRoof.position.set(120, 25, -230);
+    this.group.add(stationRoof);
+    for (const x of [106, 134]) {
+      for (const z of [-236, -224]) {
+        const col = new THREE.Mesh(this.track(new THREE.BoxGeometry(1, 7, 1)), stone);
+        col.position.set(x, 17, z);
+        this.group.add(col);
+      }
+    }
+
+    // 广场花坛
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const planter = new THREE.Mesh(this.track(new THREE.BoxGeometry(5, 1.2, 3)), stone);
+      planter.position.set(430 + Math.cos(a) * 38, 1, -360 + Math.sin(a) * 38);
+      planter.rotation.y = -a;
+      this.group.add(planter);
+      const shrub = new THREE.Mesh(this.track(new THREE.IcosahedronGeometry(2.2, 0)), new THREE.MeshStandardMaterial({ color: 0x45633f, roughness: 0.9 }));
+      shrub.position.set(430 + Math.cos(a) * 38, 1.8, -360 + Math.sin(a) * 38);
+      this.group.add(shrub);
+    }
   }
 
   private buildHarbor(): void {
@@ -574,6 +781,68 @@ export class City {
       pier.receiveShadow = true;
       this.group.add(pier);
     }
+
+    // 港区仓库：大屋顶 + 卷帘门 + 屋顶通风，给港湾增加体块层次
+    const warehouseWall = this.mat(new THREE.MeshStandardMaterial({ color: 0x4a504e, roughness: 0.82, metalness: 0.18 }));
+    const warehouseRoof = this.mat(new THREE.MeshStandardMaterial({ color: 0x2f3738, roughness: 0.7, metalness: 0.35 }));
+    const doorMat = this.mat(new THREE.MeshStandardMaterial({ color: 0x777b74, roughness: 0.55, metalness: 0.4 }));
+    const warehouses: Array<[number, number, number, number, number]> = [
+      [300, 600, 62, 34, 14],
+      [610, 585, 54, 30, 12],
+      [900, 545, 48, 28, 11],
+      [1050, 590, 40, 24, 10],
+    ];
+    for (const [x, z, w, d, h] of warehouses) {
+      if (this.isWater(x, z)) continue;
+      const body = new THREE.Mesh(this.track(new THREE.BoxGeometry(w, h, d)), warehouseWall);
+      body.position.set(x, h / 2, z);
+      body.castShadow = true;
+      body.receiveShadow = true;
+      this.group.add(body);
+      const roof = new THREE.Mesh(this.track(new THREE.BoxGeometry(w + 2, 1.4, d + 2)), warehouseRoof);
+      roof.position.set(x, h + 0.4, z);
+      roof.castShadow = true;
+      this.group.add(roof);
+      const door = new THREE.Mesh(this.track(new THREE.BoxGeometry(w * 0.28, h * 0.62, 0.5)), doorMat);
+      door.position.set(x, h * 0.34, z + d / 2 + 0.28);
+      this.group.add(door);
+      for (let i = -1; i <= 1; i++) {
+        const vent = new THREE.Mesh(this.track(new THREE.BoxGeometry(4, 1.2, 4)), metal);
+        vent.position.set(x + i * 12, h + 1.4, z - 2);
+        this.group.add(vent);
+      }
+    }
+
+    // 码头系缆桩和灯柱
+    const bollardGeo = this.track(new THREE.CylinderGeometry(0.35, 0.5, 1.6, 7));
+    const bollards = new THREE.InstancedMesh(bollardGeo, metal, 28);
+    const lampPoleGeo = this.track(new THREE.CylinderGeometry(0.14, 0.2, 8, 5));
+    const lampHeadGeo = this.track(new THREE.BoxGeometry(1.6, 0.2, 0.6));
+    const lampHeadMat = this.mat(new THREE.MeshBasicMaterial({ color: 0xffc06a, toneMapped: false }));
+    const lampPoles = new THREE.InstancedMesh(lampPoleGeo, metal, 18);
+    const lampHeads = new THREE.InstancedMesh(lampHeadGeo, lampHeadMat, 18);
+    const bdummy = new THREE.Object3D();
+    for (let i = 0; i < 28; i++) {
+      bdummy.position.set(330 + i * 26, 2.3, 674 + (i % 2) * 30);
+      bdummy.rotation.set(0, 0, 0);
+      bdummy.scale.set(1, 1, 1);
+      bdummy.updateMatrix();
+      bollards.setMatrixAt(i, bdummy.matrix);
+    }
+    for (let i = 0; i < 18; i++) {
+      const x = 300 + i * 44;
+      const z = 640 + (i % 2) * 26;
+      bdummy.position.set(x, 4, z);
+      bdummy.updateMatrix();
+      lampPoles.setMatrixAt(i, bdummy.matrix);
+      bdummy.position.set(x, 8.2, z);
+      bdummy.updateMatrix();
+      lampHeads.setMatrixAt(i, bdummy.matrix);
+    }
+    bollards.instanceMatrix.needsUpdate = true;
+    lampPoles.instanceMatrix.needsUpdate = true;
+    lampHeads.instanceMatrix.needsUpdate = true;
+    this.group.add(bollards, lampPoles, lampHeads);
 
     // 集装箱
     const containerGeo = this.track(new THREE.BoxGeometry(1, 1, 1));

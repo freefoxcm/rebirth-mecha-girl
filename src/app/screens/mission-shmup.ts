@@ -112,7 +112,7 @@ export class ShmupMissionScreen extends BaseScreen {
       }
     });
 
-    this.app.audio.startMusic(this.mission.boss ? 'boss' : 'combat');
+    this.app.audio.startMusic('combat');
     if (skipCutin) this.startMission();
     else this.playCutIn(girl);
     this.addCleanup(() => {
@@ -175,11 +175,7 @@ export class ShmupMissionScreen extends BaseScreen {
     this.app.audio.startEngine();
     const girl = GIRLS[this.app.save.selectedGirl];
     this.hud.radio(girl.name, girl.quotes.launch);
-    if (this.mission.boss) {
-      this.later(() => this.hud.radio('天枢', '「灵魂锚点确认。回收开始。」'), 1500);
-    } else {
-      this.later(() => this.hud.radio('系统', '目标已标记。WASD / 方向键移动，按住左键或空格射击。'), 1200);
-    }
+    this.later(() => this.hud.radio('系统', '目标已标记。WASD / 方向键移动，按住左键或空格射击。'), 1200);
   }
 
   update(dt: number): void {

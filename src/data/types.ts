@@ -124,12 +124,21 @@ export interface WaveSpec {
   bark?: string;
 }
 
+export type BossKind = 'ironjaw' | 'tide' | 'candle' | 'tianshu';
+
 export interface BossSpec {
+  kind: BossKind;
   name: string;
   subtitle: string;
   hp: number;
   generators: number;
   phaseAt: [number, number];
+  score: number;
+  bossAt: number;
+  intro: string;
+  phase2Line: string;
+  phase3Line: string;
+  deathLine: string;
 }
 
 export interface StageSpec {

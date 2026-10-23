@@ -136,7 +136,13 @@ export class ShmupRunner {
       this.camZ = Math.max(this.stageEndZ, this.camZ - this.scrollSpeed * dt);
       if (this.camZ <= this.stageEndZ) this.stageStopped = true;
     }
-    if (this.mission.boss && !this.bossSpawned && this.time >= 1.4) {
+    const bossSpec = this.mission.boss;
+    if (
+      bossSpec &&
+      !this.bossSpawned &&
+      this.time >= bossSpec.bossAt &&
+      (this.mission.waves.length === 0 || this.waveIndex >= this.mission.waves.length)
+    ) {
       this.spawnBoss();
     }
 
@@ -161,14 +167,18 @@ export class ShmupRunner {
   }
 
   private spawnBoss(): void {
-    if (!this.mission.boss) return;
+    const spec = this.mission.boss;
+    if (!spec) return;
     this.bossSpawned = true;
     this.stageStopped = true;
-    this.boss = new ShmupBoss(this.stageX, this.camZ, this.mission.boss.hp);
+    this.boss = new ShmupBoss(spec, this.stageX, this.camZ);
     this.scene.add(this.boss.group);
     this.totalTargets += 1;
     this.lastBossPhase = 1;
-    this.callbacks.onRadio('天枢', '「灵魂锚点确认。回收开始。」');
+    this.audio.startMusic('boss');
+    this.callbacks.onRadio(spec.name, spec.intro);
+    this.callbacks.onFlash(0.35);
+    this.callbacks.onShake(0.25);
   }
 
   private spawnWaves(): void {
@@ -283,22 +293,25 @@ export class ShmupRunner {
     if (this.boss.phase !== this.lastBossPhase) {
       this.lastBossPhase = this.boss.phase;
       if (this.boss.phase === 2) {
-        this.spawnGenerators();
-        this.callbacks.onRadio('苍穹', '「护盾发生器出现了。先拆那四台！」');
-        this.callbacks.onFlash(0.5);
+        if (this.boss.spec.generators > 0) {
+          this.spawnGenerators();
+          this.callbacks.onRadio('苍穹', '「护盾发生器出现了。先拆那四台！」');
+        } else {
+          this.callbacks.onRadio(this.boss.name, this.boss.spec.phase2Line);
+        }
+        this.callbacks.onFlash(0.45);
       } else if (this.boss.phase === 3) {
-        this.callbacks.onRadio('夜枭', '「陆沉，来做个了断。」');
-        this.callbacks.onRadio('青鸾', '「核心暴露了。打准一点。」');
-        this.callbacks.onFlash(0.4);
+        this.callbacks.onRadio(this.boss.name, this.boss.spec.phase3Line);
+        this.callbacks.onFlash(0.35);
       }
     }
   }
 
   private spawnGenerators(): void {
-    if (!this.boss || this.generatorsSpawned) return;
-    this.generatorsSpawned = true;
     const boss = this.boss;
-    for (let i = 0; i < 4; i++) {
+    if (!boss || this.generatorsSpawned || boss.spec.generators <= 0) return;
+    this.generatorsSpawned = true;
+    for (let i = 0; i < boss.spec.generators; i++) {
       const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
       const zRel = boss.zRel + Math.sin(a) * 85;
       const enemy = new ShmupEnemy('generator', boss.x + Math.cos(a) * 105, zRel, ['generator'], {
@@ -309,8 +322,8 @@ export class ShmupRunner {
       });
       this.addEnemy(enemy);
     }
-    boss.generatorsAlive = 4;
-    this.callbacks.onRadio('星隼', '「四台发生器。拆掉之前，打核心没用。」');
+    boss.setRemainingGenerators(boss.spec.generators);
+    this.callbacks.onRadio('星隼', '「护盾发生器。拆掉之前，打核心没用。」');
     this.effects.shockwave(boss.group.position, 150, 0x5fd8e8);
   }
 
@@ -470,16 +483,17 @@ export class ShmupRunner {
         this.callbacks.onShake(0.22);
       }, i * 130);
     }
-    this.scoring.addKill(5000, this.player.overdriveActive, this.difficulty === 'hard');
-    this.player.addKillCharge(5000);
+    this.scoring.addKill(this.boss.score, this.player.overdriveActive, this.difficulty === 'hard');
+    this.player.addKillCharge(this.boss.score);
     this.objectives.forEach((o) => {
       if (o.tags.includes('boss')) {
         o.current = o.count;
         o.done = true;
       }
     });
+    this.callbacks.onRadio(this.boss.name, this.boss.spec.deathLine);
     this.callbacks.onRadio('青鸾', this.girl.quotes.clear);
-    this.callbacks.onCutIn('boss', '「天枢，坠落。」', this.girl.name);
+    this.callbacks.onCutIn('boss', `「${this.boss.name}，坠落。」`, this.girl.name);
     this.callbacks.onFlash(1);
     this.callbacks.onShake(1);
     this.effects.explosion(pos, 4.2, 0xffe0a0, { surface: 'air' });
