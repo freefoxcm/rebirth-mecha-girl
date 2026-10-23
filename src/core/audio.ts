@@ -47,6 +47,8 @@ export class AudioEngine {
   private timer: number | null = null;
   private volumes = { master: 0.85, sfx: 0.75, music: 0.45 };
   private disposed = false;
+  private engine: { osc: OscillatorNode; gain: GainNode; filter: BiquadFilterNode } | null = null;
+  private lastExplosion = 0;
 
   get ready(): boolean {
     return this.ctx !== null && this.ctx.state !== 'closed';
@@ -201,6 +203,103 @@ export class AudioEngine {
 
   private midi(note: number): number {
     return 440 * Math.pow(2, (note - 69) / 12);
+  }
+
+  private panner(pan: number): AudioNode | undefined {
+    const ctx = this.ctx;
+    if (!ctx || !this.sfxBus) return undefined;
+    const p = ctx.createStereoPanner();
+    p.pan.value = Math.max(-1, Math.min(1, pan));
+    p.connect(this.sfxBus);
+    return p;
+  }
+
+  /** 分层爆炸：低频下潜 + 噪声主体 + 高频裂响 + 延迟碎片；按屏幕 X 声像。 */
+  playExplosion(scale = 1, pan = 0, surface: 'air' | 'ground' | 'water' = 'air'): void {
+    if (!this.ctx || this.ctx.state !== 'running') return;
+    const t = this.now;
+    if (t - this.lastExplosion < 0.018) return;
+    this.lastExplosion = t;
+    const size = Math.max(0.55, Math.min(2.8, scale));
+    const dest = this.panner(pan);
+    if (surface === 'water') {
+      this.noise(t, 0.5, 'highpass', 1200, 3200, 0.1 * size, 0.7, dest);
+      this.noise(t + 0.04, 0.7, 'lowpass', 1200, 120, 0.16 * size, 1.1, dest);
+      this.tone(t, 'sine', 95, 38, 0.4, 0.12 * size, dest);
+      return;
+    }
+    this.tone(t, 'sine', 78, 24, 0.55, 0.24 * size, dest);
+    this.noise(t, 0.62, 'lowpass', 1900, 70, 0.22 * size, 1.1, dest);
+    this.noise(t, 0.13, 'bandpass', 3600, 900, 0.09 * size, 1.3, dest);
+    const debris = Math.round(2 + size * 1.5);
+    for (let i = 0; i < debris; i++) {
+      this.noise(t + 0.08 + i * 0.055, 0.055, 'highpass', 2400 + i * 320, 900, 0.035, 2, dest);
+    }
+    if (surface === 'ground') {
+      this.noise(t + 0.05, 0.5, 'lowpass', 800, 120, 0.1 * size, 0.8, dest);
+    }
+  }
+
+  playImpact(pan = 0, type: 'metal' | 'shield' = 'metal'): void {
+    if (!this.ctx || this.ctx.state !== 'running') return;
+    const t = this.now;
+    const dest = this.panner(pan);
+    if (type === 'shield') {
+      this.tone(t, 'sawtooth', 1400, 260, 0.12, 0.045, dest);
+      this.noise(t, 0.1, 'bandpass', 2600, 700, 0.05, 2.2, dest);
+    } else {
+      this.tone(t, 'triangle', 2200, 700, 0.045, 0.045, dest);
+      this.noise(t, 0.04, 'bandpass', 4200, 2000, 0.03, 2.4, dest);
+    }
+  }
+
+  /** 关卡引擎底噪：低音量 saw + lowpass，随聚焦/移动小幅变调。 */
+  startEngine(): void {
+    this.init();
+    const ctx = this.ctx;
+    if (!ctx || !this.sfxBus || this.engine) return;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 62;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 240;
+    filter.Q.value = 1.2;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.0001;
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.sfxBus);
+    osc.start();
+    gain.gain.setTargetAtTime(0.012, ctx.currentTime, 0.3);
+    this.engine = { osc, gain, filter };
+  }
+
+  setEngine(focus: boolean, moving: boolean): void {
+    if (!this.engine || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const target = 58 + (moving ? 7 : 0) + (focus ? -5 : 0);
+    this.engine.osc.frequency.setTargetAtTime(target, t, 0.18);
+    this.engine.filter.frequency.setTargetAtTime(focus ? 170 : 300, t, 0.2);
+    this.engine.gain.gain.setTargetAtTime(moving ? 0.016 : 0.009, t, 0.2);
+  }
+
+  stopEngine(): void {
+    const e = this.engine;
+    if (!e || !this.ctx) return;
+    this.engine = null;
+    const t = this.ctx.currentTime;
+    e.gain.gain.setTargetAtTime(0.0001, t, 0.08);
+    try {
+      e.osc.stop(t + 0.4);
+    } catch {
+      /* already stopped */
+    }
+    window.setTimeout(() => {
+      e.osc.disconnect();
+      e.filter.disconnect();
+      e.gain.disconnect();
+    }, 500);
   }
 
   play(name: SfxName): void {
@@ -380,6 +479,7 @@ export class AudioEngine {
 
   dispose(): void {
     this.disposed = true;
+    this.stopEngine();
     if (this.timer !== null) window.clearInterval(this.timer);
     this.timer = null;
     void this.ctx?.close();

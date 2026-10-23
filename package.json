@@ -1,7 +1,7 @@
 {
   "name": "rebirth-mecha-girl",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "重生之我和机娘杀疯了 — 3D 俯视角空战街机",
   "scripts": {

@@ -13,7 +13,8 @@ import { Effects } from '../../game/effects';
 import { ShmupRunner } from '../../game/shmup/runner';
 import type { ShmupInput, ShmupSnapshot } from '../../game/shmup/types';
 import { ShmupHud } from '../../ui/shmup-hud';
-import { button, div, icon } from '../../ui/dom';
+import { CameraShake } from '../../render/camera-shake';
+import { button, div } from '../../ui/dom';
 
 const STAGE_NAMES = ['人形锁定', '翼板解锁', '前倾收纳', '机身成形', '飞行面锁定', '战机完成'];
 
@@ -31,7 +32,7 @@ export class ShmupMissionScreen extends BaseScreen {
   private paused = false;
   private started = false;
   private finished = false;
-  private shake = 0;
+  private readonly cameraShake = new CameraShake();
   private flash = 0;
   private cutinHost: HTMLElement | null = null;
   private pauseHost: HTMLElement | null = null;
@@ -91,7 +92,7 @@ export class ShmupMissionScreen extends BaseScreen {
         onRadio: (speaker, text) => this.hud?.radio(speaker, text),
         onResult: (result) => this.finish(result),
         onShake: (amount) => {
-          this.shake = Math.min(1.6, this.shake + amount);
+          this.cameraShake.add(amount);
         },
         onFlash: (amount) => {
           this.flash = Math.min(1, this.flash + amount);
@@ -171,6 +172,7 @@ export class ShmupMissionScreen extends BaseScreen {
     this.root.classList.add('is-started');
     document.body.style.cursor = 'none';
     this.hud.banner('MISSION START', this.mission.title, this.mission.chapter);
+    this.app.audio.startEngine();
     const girl = GIRLS[this.app.save.selectedGirl];
     this.hud.radio(girl.name, girl.quotes.launch);
     if (this.mission.boss) {
@@ -206,8 +208,9 @@ export class ShmupMissionScreen extends BaseScreen {
     this.env.focus(this.runner.stageX, this.runner.camZ);
     const snapshot = this.runner.getSnapshot();
     this.hud.update(snapshot, dt);
-    this.shake = Math.max(0, this.shake - dt * 3.2);
+    this.cameraShake.update(dt);
     this.flash = Math.max(0, this.flash - dt * 2.6);
+    this.app.audio.setEngine(snapshot.focus, state.x !== 0 || state.z !== 0);
     if (this.app.viewport) {
       this.app.viewport.setEffects(0, Math.max(this.flash, this.runner.flash), this.flash * (this.app.save.settings.flash ? 1 : 0.25));
       this.app.viewport.renderer.toneMappingExposure = this.env.exposure;
@@ -228,13 +231,14 @@ export class ShmupMissionScreen extends BaseScreen {
       this.camera.updateProjectionMatrix();
       this.runner.fieldW = w;
     }
-    const s = this.shake > 0 && this.app.save.settings.shake ? this.shake * 3.2 : 0;
-    this.camera.position.set(
-      this.runner.stageX + (Math.random() - 0.5) * s,
-      SHMUP.cameraY,
-      this.runner.camZ + (Math.random() - 0.5) * s,
-    );
+    const shake = this.cameraShake.sample(this.app.save.settings.shake);
+    this.camera.position.set(this.runner.stageX + shake.x, SHMUP.cameraY, this.runner.camZ + shake.z);
     this.camera.lookAt(this.runner.stageX, 0, this.runner.camZ);
+    this.camera.rotateZ(shake.roll);
+    if (Math.abs(this.camera.zoom - shake.zoom) > 0.00001) {
+      this.camera.zoom = shake.zoom;
+      this.camera.updateProjectionMatrix();
+    }
     void dt;
   }
 
@@ -243,6 +247,7 @@ export class ShmupMissionScreen extends BaseScreen {
     this.paused = !this.paused;
     document.body.style.cursor = this.paused ? 'default' : 'none';
     if (this.paused) {
+      this.app.audio.stopEngine();
       this.pauseHost = div('pause-overlay');
       const panel = div('pause-panel panel');
       const snapshot = this.runner.getSnapshot();
@@ -283,6 +288,7 @@ export class ShmupMissionScreen extends BaseScreen {
       this.pauseHost = null;
       this.root.classList.remove('is-paused');
       this.app.input.clear();
+      this.app.audio.startEngine();
     }
   }
 
@@ -291,6 +297,8 @@ export class ShmupMissionScreen extends BaseScreen {
     this.finished = true;
     this.paused = false;
     document.body.style.cursor = 'default';
+    this.cameraShake.reset();
+    this.app.audio.stopEngine();
     this.pauseHost?.remove();
     this.pauseHost = null;
     const backdrop = this.app.captureFrame();
@@ -324,6 +332,7 @@ export class ShmupMissionScreen extends BaseScreen {
     const input = this.debugInput(fire);
     for (let i = 0; i < steps; i++) {
       this.runner.update(1 / 60, input);
+      this.cameraShake.update(1 / 60);
       if (i % 4 === 0) this.updateCamera(1 / 60);
       if (this.finished) break;
     }
@@ -333,6 +342,8 @@ export class ShmupMissionScreen extends BaseScreen {
 
   exit(): void {
     super.exit();
+    this.app.audio.stopEngine();
+    this.cameraShake.reset();
     window.clearInterval(this.cutinInterval);
     if (this.app.viewport) {
       this.app.viewport.setEffects(0, 0, 0);

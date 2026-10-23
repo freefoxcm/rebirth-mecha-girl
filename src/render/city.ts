@@ -399,7 +399,7 @@ export class City {
     this.group.add(acMesh);
   }
 
-  private isWater(x: number, z: number): boolean {
+  isWater(x: number, z: number): boolean {
     return x > 250 && z > 740 + (x - 250) * -0.12;
   }
 

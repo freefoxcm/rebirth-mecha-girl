@@ -45,6 +45,7 @@ export class ShmupRunner {
   flash = 0;
   stageStopped = false;
   private readonly scene: THREE.Scene;
+  private readonly city: City;
   private readonly effects: Effects;
   private readonly audio: AudioEngine;
   private readonly rng: Rng;
@@ -79,6 +80,7 @@ export class ShmupRunner {
     callbacks: ShmupCallbacks;
   }) {
     this.scene = opts.scene;
+    this.city = opts.city;
     this.mission = opts.mission;
     this.girl = opts.girl;
     this.difficulty = opts.difficulty;
@@ -110,7 +112,10 @@ export class ShmupRunner {
     }
     this.gunStreams = opts.stats.gunDamage > 1.05 ? 3 : 2;
     if (opts.weapons.includes('piercer')) this.gunStreams += 1;
-    void opts.city;
+  }
+
+  private panFor(worldX: number): number {
+    return Math.max(-1, Math.min(1, (worldX - this.stageX) / Math.max(1, this.fieldW * 0.5)));
   }
 
   update(dt: number, input: ShmupInput): void {
@@ -362,6 +367,7 @@ export class ShmupRunner {
       this.scoring.addShot();
     }
     this.audio.play('gun');
+    this.effects.muzzle(new THREE.Vector3(p.x, SHMUP.altitude, this.camZ + p.zRel - 7), 1.15, p.girl.palette.glow);
   }
 
   private fireMissiles(): void {
@@ -384,6 +390,7 @@ export class ShmupRunner {
       });
     }
     this.audio.play('missile');
+    this.effects.muzzle(new THREE.Vector3(p.x, SHMUP.altitude, this.camZ + p.zRel - 5), 2.2, 0xffc060);
   }
 
   private damageTarget(target: ShmupTarget, amount: number, x: number, zRel: number, splash: number): void {
@@ -412,12 +419,21 @@ export class ShmupRunner {
     if (!enemy.handled && !enemy.escaped) this.handleKill(enemy);
   }
 
+  private surfaceAt(enemy: ShmupEnemy): 'air' | 'ground' | 'water' {
+    if (enemy.y > 10) return 'air';
+    return this.city.isWater(enemy.x, this.camZ + enemy.zRel) ? 'water' : 'ground';
+  }
+
   private handleKill(enemy: ShmupEnemy): void {
     if (enemy.handled) return;
     enemy.handled = true;
     enemy.group.visible = false;
-    this.effects.explosion(new THREE.Vector3(enemy.x, enemy.y, this.camZ + enemy.zRel), enemy.type === 'gunship' || enemy.type === 'boat' ? 2 : 1, 0xffa050);
-    this.audio.play('explosion');
+    const scale = enemy.type === 'gunship' || enemy.type === 'boat' ? 2.2 : enemy.type === 'ace' ? 1.8 : enemy.type === 'drone' ? 0.8 : 1.2;
+    const surface = this.surfaceAt(enemy);
+    const color = surface === 'water' ? 0xbfe8ff : surface === 'ground' ? 0xd9a060 : 0xffa050;
+    this.effects.explosion(new THREE.Vector3(enemy.x, enemy.y, this.camZ + enemy.zRel), scale, color, { surface });
+    this.audio.playExplosion(scale, this.panFor(enemy.x), surface);
+    this.callbacks.onShake(Math.min(0.42, 0.06 + enemy.radius * 0.012));
     this.scoring.addKill(enemy.score, this.player.overdriveActive, this.difficulty === 'hard');
     this.player.addKillCharge(enemy.score);
     for (const o of this.objectives) {
@@ -445,15 +461,14 @@ export class ShmupRunner {
     this.bossHandled = true;
     this.bossDefeated = true;
     const pos = this.boss.group.position.clone();
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
       window.setTimeout(() => {
-        this.effects.explosion(
-          pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 130, (Math.random() - 0.5) * 80, (Math.random() - 0.5) * 130)),
-          2.4,
-          0xffb060,
-        );
-        this.audio.play('explosion');
-      }, i * 120);
+        const at = pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 150, (Math.random() - 0.5) * 90, (Math.random() - 0.5) * 150));
+        this.effects.explosion(at, 2.1 + Math.random() * 0.8, 0xffb060, { surface: 'air' });
+        this.effects.muzzle(at, 7, 0xffe0b0);
+        this.audio.playExplosion(2.2, this.panFor(at.x), 'air');
+        this.callbacks.onShake(0.22);
+      }, i * 130);
     }
     this.scoring.addKill(5000, this.player.overdriveActive, this.difficulty === 'hard');
     this.player.addKillCharge(5000);
@@ -467,7 +482,8 @@ export class ShmupRunner {
     this.callbacks.onCutIn('boss', '「天枢，坠落。」', this.girl.name);
     this.callbacks.onFlash(1);
     this.callbacks.onShake(1);
-    this.audio.play('explosion');
+    this.effects.explosion(pos, 4.2, 0xffe0a0, { surface: 'air' });
+    this.audio.playExplosion(3.2, this.panFor(pos.x), 'air');
     this.checkComplete();
   }
 
@@ -608,10 +624,10 @@ export class ShmupRunner {
     if (res === 'ignored') return;
     this.scoring.addDamage(amount);
     this.flash = Math.min(0.8, this.flash + 0.18);
-    this.shake = Math.min(1, this.shake + amount / 24);
-    this.audio.play('hit');
-    if (res === 'revive') this.onRevive();
-    if (res === 'dead') this.fail();
+    this.callbacks.onShake(0.34);
+    this.audio.playImpact(0, 'metal');
+    // 复活/失败统一由本帧末尾的 resolvePlayerEvent 处理，避免重复触发。
+    void res;
   }
 
   private resolvePlayerEvent(): void {
@@ -637,7 +653,10 @@ export class ShmupRunner {
     this.state = 'fail';
     this.endTimer = 1.6;
     this.audio.play('fail');
-    this.effects.explosion(new THREE.Vector3(this.player.x, SHMUP.altitude, this.camZ + this.player.zRel), 3, 0xff7a40);
+    this.audio.playExplosion(2.4, 0, 'air');
+    this.callbacks.onShake(1);
+    this.callbacks.onFlash(0.5);
+    this.effects.explosion(new THREE.Vector3(this.player.x, SHMUP.altitude, this.camZ + this.player.zRel), 3, 0xff7a40, { surface: 'air' });
   }
 
   private succeed(): void {

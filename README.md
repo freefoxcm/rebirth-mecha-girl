@@ -56,12 +56,29 @@ npm run preview
 |---|---|---|
 | ![](docs/screens/boss.webp) | ![](docs/screens/ending.webp) | ![](docs/screens/hub.webp) |
 
+## 战机外形：按设计稿重建
+
+五台机不再共用一套参数化换皮：每台按 `reference_resources/<id>/02_战机三视图.png` 建立独立的 `JetBlueprint`（机身站位/截面、LERX、主翼折线、鸭翼、双/单垂尾、DSI/方棱进气、单/双/矢量喷口、座舱、编号与纹样），再生成**高模展示 + 任务 LOD**。涂装和面板线用程序化 1024 贴图，编号 02/21/35/57 与云纹/星纹/霜纹进入机翼、尾翼和机身。
+
+机库左下的 **设计对照** 按钮可在展示 / 俯视 / 侧视 / 正视之间切换，用来对照设计稿轮廓。
+
+![五机娘俯视外形](docs/screens/jets.webp)
+
+## 打击感升级
+
+- **爆炸**：核心闪光、低模火球、火/烟粒子、金属碎片、火星、冲击波环、炮口闪光；空中/地面/水面三套表面，Boss 死亡多波连环爆。
+- **震动**：trauma 驱动的平滑多频相机位移 + roll + 正交 zoom；小敌、炮艇、Boss、受击、特技分级触发，暂停/结算归零。
+- **音效**：分层爆炸（低频下潜+噪声+裂响+碎片）、立体声像、金属/护盾命中、引擎底噪、Boss 警报；全部由 WebAudio 合成。
+
+![爆炸与震动](docs/screens/explosion.webp)
+
 ## 技术
 
 - Vite 8 + TypeScript 7（strict）+ Three.js 0.186
 - 原生 DOM/CSS 做 HUD 与界面，Three.js 负责 3D；不引入前端框架
 - 程序化城市：实例化楼体/树木/车辆、收费站、港湾吊机、金融区塔楼、单轨、广告牌
-- 程序化战机：按五套参数生成机身/机翼/鸭翼/垂尾/发动机/涂装
+- 程序化战机：五套 `JetBlueprint` 生成机身/机翼/鸭翼/垂尾/进气/喷口/涂装；机库高模、任务 LOD；支持俯视/侧视/正视设计对照
+- 表现层：分层爆炸池、碎片/火星/尾迹、trauma 相机震动、分层 WebAudio 爆炸与立体声像
 - 后处理：Bloom、暗角、颗粒、速度色差、受击红边
 - WebAudio 合成音效与音乐；localStorage 双存档（进度/设置分离）
 - 测试：Vitest 单元测试 + Puppeteer 无头 Chrome 冒烟与截图
@@ -99,10 +116,13 @@ npm run test            # Vitest
 npm run typecheck
 node scripts/qa-flow.mjs      # 新游戏→序章→母舰→关卡→结算→战后
 node scripts/qa-boss.mjs      # Boss 三阶段 + 结局
-node scripts/qa-girls.mjs     # 五机娘模型/特技/两张地图
+node scripts/qa-girls.mjs     # 五机娘特技/两张地图
+node scripts/qa-jets.mjs      # 五机娘俯视外形 + draw call
 node scripts/qa-combat.mjs    # 开火推进、强制通关、结算存档
 node scripts/qa-combat-extra.mjs # 特技、解限、暂停、重生、失败结算
 node scripts/qa-mouse.mjs     # 真实鼠标左/右键输入穿透验证
+node scripts/qa-fx.mjs        # 爆炸截图 + 相机震动衰减
+node scripts/qa-audio.mjs     # WebAudio 解锁/分层爆炸/引擎循环
 ```
 
 调试入口：`?test=1` 会禁用 CSS 动画并暴露 `window.__REBIRTH__`（`state()`、`startMission()`、`winMission()`、`damageBoss()`、`advance(seconds, fire)` 等）。URL 参数 `?screen=title|hub|hangar|briefing|dialogue|mission|results|settings|codex|ending` 可直接进入指定界面。
@@ -114,9 +134,11 @@ node scripts/qa-mouse.mjs     # 真实鼠标左/右键输入穿透验证
 - 无配音、无移动端触屏、无联机/排行榜；首版为单人离线。
 - 首版没有关卡内火力道具掉落；成长放在机库/结算，后续可补 Raiden 式道具。
 - 目前只有 M4 是天枢 Boss 战，M1–M3 以王牌/护航编队收尾；每关独立 Boss 可作为下一轮扩展。
+- 五台机是**设计图级程序化近似**，不是 CAD/照片级：轮廓、分色、鸭翼/垂尾/喷口/编号已按三视图重建，但座舱内构、铆钉密度、曲面连续性仍有提升空间。设计稿本身也有少量三视图不一致，冲突处以轮廓和游戏可读性优先。
+- 爆炸、震动、音效完成首轮分层；爆炸仍是风格化低模，真机听感需要你在浏览器里试听后再调音量/密度。
 - 关卡目标与数值仍在首轮平衡，建议先玩普通难度。
 - 极端低配或关闭硬件加速时性能会下降；设置里可切低画质。
 
 ## 版本
 
-`0.1.1` — 雷电式竖版卷轴重构：完整流程、五机娘、三关 + Boss、剧情与结局、存档与养成。
+`0.1.2` — 五机娘 Blueprint 外形重建、设计对照、分层爆炸、trauma 震动与分层音效；完整流程、三关 + Boss、剧情与结局、存档与养成。

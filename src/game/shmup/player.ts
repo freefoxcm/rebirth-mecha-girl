@@ -3,7 +3,7 @@ import type { GirlSpec } from '../../data/types';
 import type { LoadoutStats } from '../../app/save';
 import { SHMUP } from '../../data/config';
 import { clamp, damp } from '../../core/math';
-import { buildGirlJet, type JetVisual } from '../../render/jets';
+import { buildGirlJet, type JetVisual } from '../../render/girl-jets';
 import type { ShmupInput } from './types';
 
 /** 雷电式玩家机：屏幕坐标 x / zRel，八方向移动，机头永远朝上。 */
@@ -44,7 +44,7 @@ export class ShmupPlayer {
     this.maxHp = stats.maxHp;
     this.hp = stats.maxHp;
     this.x = stageX;
-    this.visual = buildGirlJet(girl.jet, girl.palette);
+    this.visual = buildGirlJet(girl, { lod: 'game' });
     this.visual.group.scale.setScalar(1.1);
     this.visual.group.rotation.y = 0;
     this.visual.setThrottle(0.8);

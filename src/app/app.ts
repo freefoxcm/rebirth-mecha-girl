@@ -138,7 +138,7 @@ export class App {
     let screen = (params.get('screen') as ScreenId | null) ?? 'title';
     if (!this.hasScreen(screen)) screen = 'title';
     const initialParams: ScreenParams = {};
-    for (const key of ['scene', 'mission', 'girl', 'from']) {
+    for (const key of ['scene', 'mission', 'girl', 'from', 'view']) {
       const value = params.get(key);
       if (value) initialParams[key] = value;
     }

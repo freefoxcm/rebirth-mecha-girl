@@ -1,6 +1,6 @@
 # 《重生之我和机娘杀疯了》设计文档
 
-版本 0.1.1 · 单人 3D 竖版卷轴弹幕空战 · 浏览器
+版本 0.1.2 · 单人 3D 竖版卷轴弹幕空战 · 浏览器
 
 ## 1. 一句话
 
@@ -83,6 +83,20 @@
 - 机娘演出：标题/机库/对话用高清立绘；出击用六阶段变形图逐格播放；特技/重生/解限用全屏 cut-in。
 - 音频：WebAudio 程序合成，菜单/战斗/Boss/结局四套循环；机炮、导弹、爆炸、警报、UI 音效。
 
+### 9.1 战机外形工程
+
+- 五台机各有一份 `JetBlueprint`（`src/data/jet-blueprints.ts`），按 `02_战机三视图.png` 手工量取：20–30 个机身站位、截面宽度/上下高度、LERX、主翼折线（root/mid/tip 前后缘）、鸭翼、单/双垂尾、DSI/方棱进气、单/双/矢量喷口、座舱、编号。
+- 几何由 `render/girl-jets.ts` 生成：多面体截面 loft + 折线机翼 + 分件襟翼/尾翼 + 进气唇口/DSI + 花瓣喷口；机库高模带面板线、编号、起落架、挂架、传感器；任务使用低 LOD。
+- 涂装是程序化 1024 图集：底色/分色块、青鸾云纹、明璃红白蓝、苍穹 EW 灯带、星隼钴蓝/星纹、霜翼霜纹；编号 02/21/35/57。
+- 机库增加 **设计对照** 模式：透视展示 / 正交俯视 / 侧视 / 正视，配合机库高模检查轮廓；任务内只保证俯视轮廓、分色和引擎光。
+- 取舍：这是设计图级程序化近似，不是 CAD/照片级；三视图本身的少量不一致以轮廓与游戏可读性优先。
+
+### 9.2 爆炸 / 震动 / 音效
+
+- 爆炸池：核心闪光精灵、低模火球、火粒子/烟粒子、金属碎片 InstancedMesh、火星 InstancedMesh、冲击波环、炮口闪光；区分空中/地面/水面，Boss 死亡多波连环爆。
+- 震动：`render/camera-shake.ts` 的 trauma 系统，trauma² 映射到 X/Z 位移、屏幕 roll、正交 zoom；击杀/受击/Boss/特技按级别触发，平滑衰减并在暂停/结算归零；保留设置里的震动开关。
+- 音频：`playExplosion(scale, pan, surface)` 四层合成（低频下潜、噪声主体、裂响、延迟碎片）+ StereoPanner 声像；`playImpact` 金属/护盾；`startEngine/setEngine/stopEngine` 关卡引擎底噪；压缩器与单帧限流防止削波。
+
 ## 10. 技术架构
 
 ```
@@ -90,8 +104,11 @@ App（屏幕状态机 + SaveService/AudioEngine/InputService/Viewport）
  ├─ render/Viewport          WebGL + EffectComposer + 后处理
  ├─ render/WorldEnvironment  天空、太阳、顶光、云、雾、阴影
  ├─ render/City              程序化城市/港湾 + 碰撞体 + 地面刷点
- ├─ render/jets              参数化五机娘/敌机几何
- ├─ game/effects            曳光弹/爆炸/烟/冲击波池
+ ├─ data/jet-blueprints     五机娘三视图站位/翼面/喷口/编号
+ ├─ render/girl-jets         Blueprint → 高模/任务 LOD + 程序化涂装
+ ├─ render/jets              敌机/环境贴图（旧参数化工具保留）
+ ├─ render/camera-shake      trauma² 相机震动（位移/roll/zoom）
+ ├─ game/effects            闪光/火球/火/烟/碎片/火星/冲击波/炮口/尾迹池
  ├─ game/shmup/
  │   ├─ player               八方向移动/过热/导弹/特技/重生
  │   ├─ enemy                空中编队 + 地面滚动单位
@@ -110,12 +127,13 @@ App（屏幕状态机 + SaveService/AudioEngine/InputService/Viewport）
 
 ## 11. 当前状态与边界
 
-已完成：完整流程、四关、五机娘、M4 Boss、剧情/结局、存档、升级、信赖、设置、档案、竖版 HUD、截图与测试。
+已完成：完整流程、四关、五机娘、M4 Boss、剧情/结局、存档、升级、信赖、设置、档案、竖版 HUD、五台 Blueprint 战机、设计对照、分层爆炸、trauma 震动、分层音效、截图与测试。
 
-未做/取舍：M1–M3 独立 Boss、关卡内火力/炸弹道具掉落、3D 机娘人形、真人语音、移动端、联机；程序化美术精度低于参考视频；数值为首轮平衡。
+未做/取舍：M1–M3 独立 Boss、关卡内火力/炸弹道具掉落、3D 机娘人形、真人语音、移动端、联机；五台机是设计图级程序化近似而非 CAD 级；爆炸仍是风格化低模；数值为首轮平衡。
 
 ## 12. 验证
 
 - `npm run typecheck`、`npm run test`（16 项）、`npm run build` 通过。
 - `qa-flow`、`qa-boss`、`qa-girls`、`qa-combat`、`qa-combat-extra`、`qa-mouse` 覆盖流程、Boss、五机娘、弹幕命中、特技/解限/暂停/重生/失败、真实鼠标输入。
+- `qa-jets` 输出五机娘俯视外形与 draw call；`qa-fx` 验证爆炸与震动衰减；`qa-audio` 验证 WebAudio 解锁、分层爆炸和引擎循环。
 - 无头 Chrome 截图覆盖全部界面；生产构建 `vite preview` 资源路径验证通过。

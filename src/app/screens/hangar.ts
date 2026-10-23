@@ -7,7 +7,7 @@ import { UPGRADES, type UpgradeId } from '../../data/config';
 import { assetUrl } from '../../core/assets';
 import { formatNumber } from '../../core/math';
 import { button, div, icon } from '../../ui/dom';
-import { buildGirlJet, type JetVisual } from '../../render/jets';
+import { buildGirlJet, type JetVisual } from '../../render/girl-jets';
 
 const STAGE_NAMES = ['人形锁定', '翼板解锁', '前倾收纳', '机身成形', '飞行面锁定', '战机完成'];
 
@@ -30,6 +30,12 @@ function labelTexture(text: string): THREE.CanvasTexture {
 export class HangarScreen extends BaseScreen {
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
+  private designCamera!: THREE.OrthographicCamera;
+  private setGroup: THREE.Group | null = null;
+  private setLights: THREE.Light[] = [];
+  private designLights: THREE.Light[] = [];
+  private view: 'showcase' | 'top' | 'side' | 'front' = 'showcase';
+  private viewButton: HTMLButtonElement | null = null;
   private jet: JetVisual | null = null;
   private ring!: THREE.Mesh;
   private stageGroup!: THREE.Group;
@@ -50,6 +56,8 @@ export class HangarScreen extends BaseScreen {
     this.root.classList.add('hangar-screen');
     this.app.exposure = 1.12;
     this.from = params?.from === 'title' ? 'title' : 'hub';
+    const requestedView = params?.view;
+    this.view = requestedView === 'top' || requestedView === 'side' || requestedView === 'front' ? requestedView : 'showcase';
     this.girl = GIRLS[this.app.save.selectedGirl];
     const bgGirl = this.girl;
 
@@ -61,8 +69,34 @@ export class HangarScreen extends BaseScreen {
     this.camera = new THREE.PerspectiveCamera(38, 16 / 9, 0.1, 120);
     this.camera.position.set(9, 8.6, 24);
     this.camera.lookAt(0, 2.4, 0);
+    const viewHeight = 17.5;
+    const viewWidth = viewHeight * (window.innerWidth / Math.max(1, window.innerHeight));
+    this.designCamera = new THREE.OrthographicCamera(-viewWidth / 2, viewWidth / 2, viewHeight / 2, -viewHeight / 2, 0.1, 160);
+    this.applyDesignCamera();
 
     this.buildSet();
+    // 设计对照模式需要干净背景：把机库布景收进一个组，展示模式再打开。
+    this.setGroup = new THREE.Group();
+    for (const child of [...this.scene.children]) {
+      if (child instanceof THREE.Light || child === this.setGroup || child === this.stageGroup) continue;
+      this.scene.remove(child);
+      this.setGroup.add(child);
+    }
+    this.scene.add(this.setGroup);
+
+    const designHemi = new THREE.HemisphereLight(0xe4edf5, 0x252a31, 1.15);
+    const designKey = new THREE.DirectionalLight(0xffffff, 1.2);
+    designKey.position.set(8, 22, 10);
+    const designFill = new THREE.DirectionalLight(0x9fc8e8, 0.55);
+    designFill.position.set(-12, 8, -8);
+    const designRim = new THREE.DirectionalLight(0xf2b01e, 0.35);
+    designRim.position.set(0, 5, -20);
+    this.designLights = [designHemi, designKey, designFill, designRim];
+    this.designLights.forEach((light) => {
+      light.visible = false;
+      this.scene.add(light);
+    });
+    this.applyViewVisibility();
 
     const top = div('topbar');
     const back = button(`${icon('back', 14)} ${this.from === 'title' ? '返回标题' : '返回母舰'}`, () => {
@@ -85,6 +119,8 @@ export class HangarScreen extends BaseScreen {
     const rosterFoot = div('roster-foot');
     const deformBtn = button(`${icon('play', 13)} 六段变形演示`, () => this.openTransform(), 'ghost', 'deform-btn');
     rosterFoot.appendChild(deformBtn);
+    this.viewButton = button(`设计对照：${this.view === 'showcase' ? '展示' : this.view === 'top' ? '俯视' : this.view === 'side' ? '侧视' : '正视'}`, () => this.cycleView(), 'ghost', 'design-view-btn');
+    rosterFoot.appendChild(this.viewButton);
     this.rosterHost.appendChild(rosterFoot);
 
     this.detailHost = div('hangar-detail');
@@ -125,6 +161,7 @@ export class HangarScreen extends BaseScreen {
 
     const hemi = new THREE.HemisphereLight(0x8fb4c8, 0x1a1612, 0.55);
     scene.add(hemi);
+    this.setLights.push(hemi);
 
     const key = new THREE.DirectionalLight(0xffcf96, 2.6);
     key.position.set(9, 14, 8);
@@ -138,13 +175,16 @@ export class HangarScreen extends BaseScreen {
     key.shadow.camera.far = 40;
     key.shadow.bias = -0.0008;
     scene.add(key);
+    this.setLights.push(key);
 
     const rim = new THREE.PointLight(0x4fd8e8, 45, 30, 2);
     rim.position.set(-8, 5, -4);
     scene.add(rim);
+    this.setLights.push(rim);
     const warm = new THREE.PointLight(0xff9a4a, 32, 26, 2);
     warm.position.set(7, 4, -6);
     scene.add(warm);
+    this.setLights.push(warm);
 
     // 机库圆筒
     const wallMat = new THREE.MeshStandardMaterial({ color: 0x0a1016, roughness: 0.7, metalness: 0.4, side: THREE.BackSide });
@@ -262,6 +302,53 @@ export class HangarScreen extends BaseScreen {
     scene.add(this.stageGroup);
   }
 
+  private applyViewVisibility(): void {
+    const showcase = this.view === 'showcase';
+    if (this.setGroup) this.setGroup.visible = showcase;
+    this.setLights.forEach((light) => {
+      light.visible = showcase;
+    });
+    this.designLights.forEach((light) => {
+      light.visible = !showcase;
+    });
+    this.jet?.setGear(showcase);
+    this.app.exposure = showcase ? 1.12 : 0.8;
+    this.scene.fog = showcase ? new THREE.FogExp2(0x05080c, 0.022) : null;
+  }
+
+  private applyDesignCamera(): void {
+    const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+    const h = 17.5;
+    const w = h * aspect;
+    this.designCamera.left = -w / 2;
+    this.designCamera.right = w / 2;
+    this.designCamera.top = h / 2;
+    this.designCamera.bottom = -h / 2;
+    this.designCamera.updateProjectionMatrix();
+    if (this.view === 'top') {
+      this.designCamera.up.set(0, 0, -1);
+      this.designCamera.position.set(0, 50, 0.001);
+      this.designCamera.lookAt(0, 1.2, 0);
+    } else if (this.view === 'side') {
+      this.designCamera.up.set(0, 1, 0);
+      this.designCamera.position.set(-50, 4, 0);
+      this.designCamera.lookAt(0, 1.8, 0);
+    } else if (this.view === 'front') {
+      this.designCamera.up.set(0, 1, 0);
+      this.designCamera.position.set(0, 4, -50);
+      this.designCamera.lookAt(0, 1.8, 0);
+    }
+  }
+
+  private cycleView(): void {
+    const order: Array<'showcase' | 'top' | 'side' | 'front'> = ['showcase', 'top', 'side', 'front'];
+    this.view = order[(order.indexOf(this.view) + 1) % order.length];
+    this.applyDesignCamera();
+    this.applyViewVisibility();
+    this.viewButton?.replaceChildren(document.createTextNode(`设计对照：${this.view === 'showcase' ? '展示' : this.view === 'top' ? '俯视' : this.view === 'side' ? '侧视' : '正视'}`));
+    this.app.audio.play('ui');
+  }
+
   private buildJetFor(id: GirlId): void {
     if (this.jet) {
       this.stageGroup.remove(this.jet.group);
@@ -269,8 +356,8 @@ export class HangarScreen extends BaseScreen {
       this.jet = null;
     }
     const girl = GIRLS[id];
-    const jet = buildGirlJet(girl.jet, girl.palette);
-    jet.setGear(true);
+    const jet = buildGirlJet(girl, { lod: 'hangar' });
+    jet.setGear(this.view === 'showcase');
     jet.setThrottle(0.18);
     jet.group.scale.setScalar(0.74);
     jet.group.position.set(0, 1.55, 0);
@@ -504,6 +591,14 @@ export class HangarScreen extends BaseScreen {
       this.camera.aspect = aspect;
       this.camera.updateProjectionMatrix();
     }
+    if (this.view !== 'showcase') {
+      this.jet.group.rotation.y = 0;
+      this.jet.inner.rotation.z = 0;
+      const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+      if (Math.abs(this.designCamera.right - this.designCamera.left - 17.5 * aspect) > 0.01) this.applyDesignCamera();
+      return;
+    }
+    this.jet.group.rotation.y += 0;
     const px = this.app.input.pointerNdc.x;
     const py = this.app.input.pointerNdc.y;
     this.camera.position.x += (9 + px * 1.2 - this.camera.position.x) * 0.03;
@@ -512,11 +607,12 @@ export class HangarScreen extends BaseScreen {
   }
 
   backdrop(): { scene: THREE.Scene; camera: THREE.Camera } {
-    return { scene: this.scene, camera: this.camera };
+    return { scene: this.scene, camera: this.view === 'showcase' ? this.camera : this.designCamera };
   }
 
   exit(): void {
     super.exit();
+    this.app.exposure = 1.04;
     if (this.jet) {
       this.stageGroup.remove(this.jet.group);
       this.jet.dispose();
