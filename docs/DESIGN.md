@@ -1,6 +1,6 @@
 # 《重生之我和机娘杀疯了》设计文档
 
-版本 0.1.3 · 单人 3D 竖版卷轴弹幕空战 · 浏览器
+版本 0.2.0 · 单人 3D 竖版卷轴弹幕空战 · 浏览器
 
 ## 1. 一句话
 
@@ -98,11 +98,12 @@
 
 ### 9.1 战机外形工程
 
-- 五台机各有一份 `JetBlueprint`（`src/data/jet-blueprints.ts`），按 `02_战机三视图.png` 手工量取：20–30 个机身站位、截面宽度/上下高度、LERX、主翼折线（root/mid/tip 前后缘）、鸭翼、单/双垂尾、DSI/方棱进气、单/双/矢量喷口、座舱、编号。
-- 几何由 `render/girl-jets.ts` 生成：多面体截面 loft + 折线机翼 + 分件襟翼/尾翼 + 进气唇口/DSI + 花瓣喷口；机库高模带面板线、编号、起落架、挂架、传感器；任务使用低 LOD。
-- 涂装是程序化 1024 图集：底色/分色块、青鸾云纹、明璃红白蓝、苍穹 EW 灯带、星隼钴蓝/星纹、霜翼霜纹；编号 02/21/35/57。
-- 机库增加 **设计对照** 模式：透视展示 / 正交俯视 / 侧视 / 正视，配合机库高模检查轮廓；任务内只保证俯视轮廓、分色和引擎光。
-- 取舍：这是设计图级程序化近似，不是 CAD/照片级；三视图本身的少量不一致以轮廓与游戏可读性优先。
+- **Blender 管线**：`art/blender/lib/` 内的参数化 hard-surface 库按 `jet_specs.py` 中的数据生成五台机；每台包含 30–48 个机身站位、带折线 chine 的截面、单块折线机翼（7 个平面控制点）、鸭翼/LEVCON、外倾双垂尾/单垂尾、DSI/caret/belly 进气、单/双/矢量喷口、座舱内构、起落架和几何面板线。
+- **源文件与导出**：`art/blender/build_jets.py` 保存可编辑 `art/blender/source/<id>.blend`，并导出 `public/assets/jets/<id>/{showcase,game}.glb`；展示级约 10–12 万三角面、任务级约 0.7–1 万三角面，Draco 压缩。`src/data/jet-models.json` 记录尺寸、预算、喷口/灯位锚点和材质。
+- **游戏加载**：`render/jet-assets.ts` 用 GLTFLoader + DRACOLoader 预载任务低模；机库按需异步加载展示级模型并原地替换；失败或 `?jets=procedural` 时回退到 `render/girl-jets.ts` 的程序化 Blueprint 模型。
+- **涂装**：材质分色 + 几何云纹/金线/编号贴花；青鸾玉白/青瓷绿/淡金，明璃漆白/朱红/深蓝，苍穹午夜蓝/青蓝 EW 灯带，星隼石墨灰/钴蓝/电蓝，霜翼霜白/钢蓝/冷青。
+- **设计对照**：机库保留展示 / 俯视 / 侧视 / 正视四机位，用来对照三视图轮廓和比例。
+- **取舍**：这是设计图级重建，不是 CAD/照片级；实时 GLB 暂不含面板缝几何，避免细管在浏览器里采样成虚线；密集缝线保留在 `.blend` / Cycles 渲染中。
 
 ### 9.2 爆炸 / 震动 / 音效
 
@@ -117,9 +118,10 @@ App（屏幕状态机 + SaveService/AudioEngine/InputService/Viewport）
  ├─ render/Viewport          WebGL + EffectComposer + 后处理
  ├─ render/WorldEnvironment  天空、太阳、顶光、云、雾、阴影
  ├─ render/City              程序化城市/港湾 + 碰撞体 + 地面刷点
- ├─ data/jet-blueprints     五机娘三视图站位/翼面/喷口/编号
- ├─ render/girl-jets         Blueprint → 高模/任务 LOD + 程序化涂装
- ├─ render/jets              敌机/环境贴图（旧参数化工具保留）
+ ├─ data/jet-blueprints     五机娘三视图站位/翼面/喷口/编号（程序化回退基准）
+ ├─ data/jet-models         Blender 资产 manifest（路径/预算/锚点）
+ ├─ render/jet-assets       GLTFLoader + DRACOLoader、GLB → JetVisual、异步/回退
+ ├─ render/girl-jets        Blender 资产优先 + 程序化 Blueprint 回退
  ├─ render/camera-shake      trauma² 相机震动（位移/roll/zoom）
  ├─ game/effects            闪光/火球/火/烟/碎片/火星/冲击波/炮口/尾迹池
  ├─ game/shmup/
@@ -136,18 +138,19 @@ App（屏幕状态机 + SaveService/AudioEngine/InputService/Viewport）
 - 模拟固定 1/60 步进（调试推进可复现），渲染跟随真实帧。
 - 关卡使用屏幕坐标：玩家/空中敌机/子弹为 `zRel`，地面单位用世界 Z 换算，镜头滚动只影响背景与地面目标。
 - 内容数据集中在 `src/data/`，任务/剧情/机娘均为数据驱动。
-- 素材管线：`scripts/prepare-art.mjs` 用 ffmpeg 从概念图裁切/转码 WebP，生成 `art-manifest.json`。
+- 素材管线：`scripts/prepare-art.mjs` 用 ffmpeg 从概念图裁切/转码 WebP，生成 `art-manifest.json`；`scripts/build-jets.mjs` 调用 Blender 生成 `.blend`/GLB/manifest，`scripts/validate-jets.mjs` 做结构/预算校验。
 
 ## 11. 当前状态与边界
 
-已完成：完整流程、四关、四关关底 Boss（铁颚/潮汐/烛龙/天枢）、五机娘、剧情/结局、存档、升级、信赖、设置、档案、竖版 HUD、五台 Blueprint 战机、设计对照、场景细节、分层爆炸、trauma 震动、分层音效、截图与测试。
+已完成：完整流程、四关、四关关底 Boss（铁颚/潮汐/烛龙/天枢）、五机娘、剧情/结局、存档、升级、信赖、设置、档案、竖版 HUD、五台 Blender 重建战机（showcase/game GLB + Draco + 程序化回退）、设计对照、场景细节、分层爆炸、trauma 震动、分层音效、截图与测试。
 
-未做/取舍：M1–M3 的 Boss 专属机制/弹幕仍可深化（目前共用部分骨架）；关卡内火力/炸弹道具掉落、3D 机娘人形、真人语音、移动端、联机；五台机是设计图级程序化近似而非 CAD 级；爆炸仍是风格化低模；数值为首轮平衡。
+未做/取舍：M1–M3 的 Boss 专属机制/弹幕仍可深化（目前共用部分骨架）；关卡内火力/炸弹道具掉落、3D 机娘人形、真人语音、移动端、联机；五台机是设计图级重建而非 CAD 级，实时 GLB 暂不含面板缝；爆炸仍是风格化低模；数值为首轮平衡。
 
 ## 12. 验证
 
 - `npm run typecheck`、`npm run test`（16 项）、`npm run build` 通过。
+- `npm run art:jets`、`npm run validate:jets` 通过：五台 showcase/game GLB 结构、朝向、尺寸、三角面与体积预算达标。
+- `node scripts/qa-jet-model.mjs` 验证五台机库展示级加载、任务 LOD、无 console error；`qa-jets` 输出五机娘俯视外形与 draw call。
 - `qa-flow`、`qa-boss`、`qa-girls`、`qa-combat`、`qa-combat-extra`、`qa-mouse` 覆盖流程、Boss、五机娘、弹幕命中、特技/解限/暂停/重生/失败、真实鼠标输入。
-- `qa-jets` 输出五机娘俯视外形与 draw call；`qa-fx` 验证爆炸与震动衰减；`qa-audio` 验证 WebAudio 解锁、分层爆炸和引擎循环。
 - `qa-stage-bosses` 验证 M1–M4 关底刷新、M1–M3 阶段 2/3 切换与截图；`qa-boss` 验证 M4 护盾发生器与结局。
 - 无头 Chrome 截图覆盖全部界面；生产构建 `vite preview` 资源路径验证通过。

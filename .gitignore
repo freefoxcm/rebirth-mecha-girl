@@ -12,3 +12,12 @@ reference_resources/**/*.mp4
 
 # ACL repair artefacts live outside the repo, this is just a guard
 _acl-repair-combat-go/
+
+# Portable Blender toolchain + generated Draco decoder (rebuilt by scripts)
+.tools/
+public/assets/draco/
+*.blend1
+
+# Blender / Python cache
+__pycache__/
+*.pyc

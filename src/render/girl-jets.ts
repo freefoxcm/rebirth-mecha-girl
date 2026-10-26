@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { GirlSpec, Palette } from '../data/types';
 import { JET_BLUEPRINTS, type JetBlueprint, type JetWingPlan } from '../data/jet-blueprints';
 import type { JetVisual } from './jets';
+import { buildModelJetVisual, useProceduralJets } from './jet-assets';
 
 export type { JetVisual } from './jets';
 
@@ -562,7 +563,27 @@ function tailDecalTexture(blueprint: JetBlueprint): THREE.CanvasTexture {
   return tex;
 }
 
-export function buildGirlJet(girl: GirlSpec, options: { lod?: 'hangar' | 'game' } = {}): JetVisual {
+/** Blender 资产优先；未加载/失败时回退到旧的程序化战机。 */
+export function buildGirlJet(
+  girl: GirlSpec,
+  options: { lod?: 'hangar' | 'game'; fallbackLod?: 'hangar' | 'game' } = {},
+): JetVisual {
+  const lod: 'hangar' | 'game' = options.lod ?? 'hangar';
+  if (!useProceduralJets()) {
+    const model = buildModelJetVisual(girl, lod === 'hangar' ? 'showcase' : 'game');
+    if (model) return model;
+    if (options.fallbackLod) {
+      const fallback = buildModelJetVisual(
+        girl,
+        options.fallbackLod === 'hangar' ? 'showcase' : 'game',
+      );
+      if (fallback) return fallback;
+    }
+  }
+  return buildProceduralGirlJet(girl, options);
+}
+
+function buildProceduralGirlJet(girl: GirlSpec, options: { lod?: 'hangar' | 'game' } = {}): JetVisual {
   const blueprint = JET_BLUEPRINTS[girl.id];
   const high = (options.lod ?? 'hangar') === 'hangar';
   const mats = matsFor(girl.palette, high);
@@ -700,7 +721,7 @@ export function buildGirlJet(girl: GirlSpec, options: { lod?: 'hangar' | 'game' 
 
 /** 兼容旧的机库调用方式。 */
 export function buildGirlJetLegacy(girl: GirlSpec): JetVisual {
-  return buildGirlJet(girl, { lod: 'hangar' });
+  return buildProceduralGirlJet(girl, { lod: 'hangar' });
 }
 
 export { Z_AXIS };

@@ -8,6 +8,7 @@ import { GIRLS, GIRL_ORDER } from '../data/girls';
 import { MISSION_ORDER } from '../data/missions';
 import type { GirlId, MissionId, MissionResult, ScreenId } from '../data/types';
 import { Viewport } from '../render/viewport';
+import { getJetStatus, preloadGameJetModels } from '../render/jet-assets';
 import { SaveService } from './save';
 import { el } from '../ui/dom';
 
@@ -35,6 +36,7 @@ export interface DebugApi {
   advance: (seconds: number, fire?: boolean) => void;
   goto: (id: ScreenId, params?: ScreenParams) => void;
   capture: () => string;
+  jetStatus: () => unknown;
 }
 
 export class App {
@@ -126,6 +128,11 @@ export class App {
     }
     await preloadImages([...new Set(paths)], (loaded, total) => {
       setStatus(`灵契同步中… ${Math.min(99, Math.round((loaded / total) * 100))}%`);
+    });
+
+    setStatus('战机模型同步中… 0/5');
+    await preloadGameJetModels((loaded, total) => {
+      setStatus(`战机模型同步中… ${loaded}/${total}`);
     });
 
     setStatus('栖霞号甲板已就绪');
@@ -286,6 +293,7 @@ export class App {
       },
       goto: (id, params) => this.show(id, params),
       capture: () => this.captureFrame(),
+      jetStatus: () => getJetStatus(),
     };
     (window as unknown as { __REBIRTH__: DebugApi }).__REBIRTH__ = api;
   }

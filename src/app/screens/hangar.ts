@@ -8,6 +8,7 @@ import { assetUrl } from '../../core/assets';
 import { formatNumber } from '../../core/math';
 import { button, div, icon } from '../../ui/dom';
 import { buildGirlJet, type JetVisual } from '../../render/girl-jets';
+import { isJetModelReady, loadShowcaseJetModel } from '../../render/jet-assets';
 
 const STAGE_NAMES = ['人形锁定', '翼板解锁', '前倾收纳', '机身成形', '飞行面锁定', '战机完成'];
 
@@ -37,6 +38,7 @@ export class HangarScreen extends BaseScreen {
   private view: 'showcase' | 'top' | 'side' | 'front' = 'showcase';
   private viewButton: HTMLButtonElement | null = null;
   private jet: JetVisual | null = null;
+  private showcaseToken = 0;
   private ring!: THREE.Mesh;
   private stageGroup!: THREE.Group;
   private girl!: GirlSpec;
@@ -142,6 +144,7 @@ export class HangarScreen extends BaseScreen {
     this.root.append(top, this.rosterHost, stageFrame, this.stageLabel, this.detailHost, bottom);
     this.renderDetail();
     this.buildJetFor(this.girl.id);
+    void this.requestShowcase(this.girl.id);
 
     this.onWindow('keydown', (e) => {
       if (e.code === 'Escape') this.go(this.from);
@@ -356,7 +359,10 @@ export class HangarScreen extends BaseScreen {
       this.jet = null;
     }
     const girl = GIRLS[id];
-    const jet = buildGirlJet(girl, { lod: 'hangar' });
+    const highQuality = this.app.save.settings.quality !== 'low';
+    const jet = highQuality
+      ? buildGirlJet(girl, { lod: 'hangar', fallbackLod: 'game' })
+      : buildGirlJet(girl, { lod: 'game' });
     jet.setGear(this.view === 'showcase');
     jet.setThrottle(0.18);
     jet.group.scale.setScalar(0.74);
@@ -370,6 +376,19 @@ export class HangarScreen extends BaseScreen {
     });
     this.stageGroup.add(jet.group);
     this.jet = jet;
+  }
+
+  /** 高画质下异步拉取展示级模型，到达后原地替换。 */
+  private async requestShowcase(id: GirlId): Promise<void> {
+    if (this.app.save.settings.quality === 'low') return;
+    const token = ++this.showcaseToken;
+    if (!isJetModelReady(id, 'showcase')) {
+      await loadShowcaseJetModel(id);
+    }
+    if (token !== this.showcaseToken) return;
+    if (!this.app.save.isGirlUnlocked(id) || this.girl.id !== id) return;
+    if (!isJetModelReady(id, 'showcase')) return;
+    this.buildJetFor(id);
   }
 
   private rosterItem(id: GirlId): HTMLButtonElement {
@@ -404,6 +423,7 @@ export class HangarScreen extends BaseScreen {
     this.girl = GIRLS[id];
     this.app.audio.play('ui');
     this.buildJetFor(id);
+    void this.requestShowcase(id);
     this.renderRoster();
     this.renderDetail();
     this.stageLabel.innerHTML = `
@@ -612,6 +632,7 @@ export class HangarScreen extends BaseScreen {
 
   exit(): void {
     super.exit();
+    this.showcaseToken++;
     this.app.exposure = 1.04;
     if (this.jet) {
       this.stageGroup.remove(this.jet.group);

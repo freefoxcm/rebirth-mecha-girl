@@ -1,0 +1,539 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-24T07:36:47.177Z",
+  "blender": "Blender 5.2.3 LTS (hash e13b728c6880 built 2026-10-22 01:37:16)",
+  "girls": {
+    "qingluan": {
+      "id": "qingluan",
+      "name": "QINGLUAN",
+      "number": "QL-01",
+      "length": 21.8,
+      "span": 15.2,
+      "height": 4.6,
+      "bounds": {
+        "min": [
+          -7.6,
+          -0.756,
+          -11.89
+        ],
+        "max": [
+          7.6,
+          2.9115,
+          11.2
+        ],
+        "size": [
+          15.2,
+          3.6675,
+          23.09
+        ]
+      },
+      "showcase": {
+        "path": "assets/jets/qingluan/showcase.glb",
+        "triangles": 101932,
+        "meshes": 17,
+        "bytes": 192432,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Paint_Accent",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Glow_Soft",
+          "Canopy_Glass",
+          "Canopy_Glass_Dark",
+          "Paint_Underside",
+          "Paint_Radome",
+          "Paint_Marking"
+        ]
+      },
+      "game": {
+        "path": "assets/jets/qingluan/game.glb",
+        "triangles": 10120,
+        "meshes": 14,
+        "bytes": 45352,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Canopy_Glass_Dark",
+          "Paint_Accent",
+          "Paint_Underside",
+          "Paint_Radome"
+        ]
+      },
+      "effects": {
+        "flames": [
+          {
+            "x": -0.82,
+            "y": -0.12,
+            "z": 11.26,
+            "radius": 0.6,
+            "length": 2.76
+          },
+          {
+            "x": 0.82,
+            "y": -0.12,
+            "z": 11.26,
+            "radius": 0.6,
+            "length": 2.76
+          }
+        ],
+        "glows": [
+          {
+            "x": -0.82,
+            "y": -0.12,
+            "z": 11.2,
+            "radius": 0.6
+          },
+          {
+            "x": 0.82,
+            "y": -0.12,
+            "z": 11.2,
+            "radius": 0.6
+          }
+        ],
+        "navs": [
+          {
+            "x": -7.6,
+            "y": 0.207,
+            "z": 6.96,
+            "color": "red"
+          },
+          {
+            "x": 7.6,
+            "y": 0.207,
+            "z": 6.96,
+            "color": "green"
+          }
+        ],
+        "gearNode": "Gear"
+      },
+      "blend": "art/blender/source/qingluan.blend"
+    },
+    "akari": {
+      "id": "akari",
+      "name": "AKARI-02",
+      "number": "02",
+      "length": 18.2,
+      "span": 12.6,
+      "height": 4.8,
+      "bounds": {
+        "min": [
+          -6.3197,
+          -0.8693,
+          -10.09
+        ],
+        "max": [
+          6.3197,
+          2.82,
+          9.1
+        ],
+        "size": [
+          12.6394,
+          3.6893,
+          19.19
+        ]
+      },
+      "showcase": {
+        "path": "assets/jets/akari/showcase.glb",
+        "triangles": 111398,
+        "meshes": 14,
+        "bytes": 153276,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Paint_Accent",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Glow_Soft",
+          "Canopy_Glass",
+          "Paint_Marking"
+        ]
+      },
+      "game": {
+        "path": "assets/jets/akari/game.glb",
+        "triangles": 7964,
+        "meshes": 12,
+        "bytes": 36412,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Canopy_Glass_Dark",
+          "Paint_Accent"
+        ]
+      },
+      "effects": {
+        "flames": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 9.01,
+            "radius": 0.82,
+            "length": 3.772
+          }
+        ],
+        "glows": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 8.95,
+            "radius": 0.82
+          }
+        ],
+        "navs": [
+          {
+            "x": -6.3,
+            "y": 0.1776,
+            "z": 5.196,
+            "color": "red"
+          },
+          {
+            "x": 6.3,
+            "y": 0.1776,
+            "z": 5.196,
+            "color": "green"
+          }
+        ],
+        "gearNode": "Gear"
+      },
+      "blend": "art/blender/source/akari.blend"
+    },
+    "astra": {
+      "id": "astra",
+      "name": "ASTRA-35",
+      "number": "35",
+      "length": 15.7,
+      "span": 11,
+      "height": 4.38,
+      "bounds": {
+        "min": [
+          -5.5,
+          -0.8692,
+          -8.84
+        ],
+        "max": [
+          5.5,
+          2.5398,
+          8
+        ],
+        "size": [
+          11,
+          3.409,
+          16.84
+        ]
+      },
+      "showcase": {
+        "path": "assets/jets/astra/showcase.glb",
+        "triangles": 110442,
+        "meshes": 16,
+        "bytes": 168012,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Paint_Accent",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Glow_Soft",
+          "Canopy_Glass",
+          "Canopy_Glass_Dark",
+          "Glow_Emit",
+          "Paint_Marking"
+        ]
+      },
+      "game": {
+        "path": "assets/jets/astra/game.glb",
+        "triangles": 6760,
+        "meshes": 13,
+        "bytes": 36688,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Canopy_Glass_Dark",
+          "Paint_Accent",
+          "Glow_Emit"
+        ]
+      },
+      "effects": {
+        "flames": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 8.06,
+            "radius": 0.82,
+            "length": 3.772
+          }
+        ],
+        "glows": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 8,
+            "radius": 0.82
+          }
+        ],
+        "navs": [
+          {
+            "x": -5.5,
+            "y": 0.1171,
+            "z": 4.904,
+            "color": "red"
+          },
+          {
+            "x": 5.5,
+            "y": 0.1171,
+            "z": 4.904,
+            "color": "green"
+          }
+        ],
+        "gearNode": "Gear"
+      },
+      "blend": "art/blender/source/astra.blend"
+    },
+    "haneul": {
+      "id": "haneul",
+      "name": "HANEUL-21",
+      "number": "21",
+      "length": 21.3,
+      "span": 15.2,
+      "height": 5.8,
+      "bounds": {
+        "min": [
+          -7.6,
+          -0.736,
+          -11.64
+        ],
+        "max": [
+          7.6,
+          3.3293,
+          10.95
+        ],
+        "size": [
+          15.2,
+          4.0653,
+          22.59
+        ]
+      },
+      "showcase": {
+        "path": "assets/jets/haneul/showcase.glb",
+        "triangles": 106836,
+        "meshes": 16,
+        "bytes": 160616,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Paint_Accent",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Glow_Soft",
+          "Canopy_Glass",
+          "Canopy_Glass_Dark",
+          "Glow_Emit",
+          "Paint_Marking"
+        ]
+      },
+      "game": {
+        "path": "assets/jets/haneul/game.glb",
+        "triangles": 7972,
+        "meshes": 12,
+        "bytes": 38860,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Canopy_Glass_Dark",
+          "Glow_Emit"
+        ]
+      },
+      "effects": {
+        "flames": [
+          {
+            "x": -0.82,
+            "y": -0.1,
+            "z": 11.01,
+            "radius": 0.6,
+            "length": 2.76
+          },
+          {
+            "x": 0.82,
+            "y": -0.1,
+            "z": 11.01,
+            "radius": 0.6,
+            "length": 2.76
+          }
+        ],
+        "glows": [
+          {
+            "x": -0.82,
+            "y": -0.1,
+            "z": 10.95,
+            "radius": 0.6
+          },
+          {
+            "x": 0.82,
+            "y": -0.1,
+            "z": 10.95,
+            "radius": 0.6
+          }
+        ],
+        "navs": [
+          {
+            "x": -7.6,
+            "y": 0.202,
+            "z": 6.838,
+            "color": "red"
+          },
+          {
+            "x": 7.6,
+            "y": 0.202,
+            "z": 6.838,
+            "color": "green"
+          }
+        ],
+        "gearNode": "Gear"
+      },
+      "blend": "art/blender/source/haneul.blend"
+    },
+    "snega": {
+      "id": "snega",
+      "name": "SNEGA-57",
+      "number": "57",
+      "length": 22.8,
+      "span": 16.4,
+      "height": 5.1,
+      "bounds": {
+        "min": [
+          -8.2,
+          -0.8344,
+          -12.39
+        ],
+        "max": [
+          8.2,
+          3.0852,
+          11.4
+        ],
+        "size": [
+          16.4,
+          3.9196,
+          23.79
+        ]
+      },
+      "showcase": {
+        "path": "assets/jets/snega/showcase.glb",
+        "triangles": 118622,
+        "meshes": 16,
+        "bytes": 172012,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Paint_Accent",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Glow_Soft",
+          "Canopy_Glass",
+          "Canopy_Glass_Dark",
+          "Glow_Emit",
+          "Paint_Marking"
+        ]
+      },
+      "game": {
+        "path": "assets/jets/snega/game.glb",
+        "triangles": 9522,
+        "meshes": 13,
+        "bytes": 42324,
+        "draco": true,
+        "materials": [
+          "Paint_Base",
+          "Paint_Secondary",
+          "Metal_Detail",
+          "Paint_Structural",
+          "Metal_Heat",
+          "Paint_Dark",
+          "Canopy_Glass_Dark",
+          "Paint_Accent",
+          "Glow_Emit"
+        ]
+      },
+      "effects": {
+        "flames": [
+          {
+            "x": -1,
+            "y": -0.1,
+            "z": 11.26,
+            "radius": 0.68,
+            "length": 3.128
+          },
+          {
+            "x": 1,
+            "y": -0.1,
+            "z": 11.26,
+            "radius": 0.68,
+            "length": 3.128
+          }
+        ],
+        "glows": [
+          {
+            "x": -1,
+            "y": -0.1,
+            "z": 11.2,
+            "radius": 0.68
+          },
+          {
+            "x": 1,
+            "y": -0.1,
+            "z": 11.2,
+            "radius": 0.68
+          }
+        ],
+        "navs": [
+          {
+            "x": -8.2,
+            "y": 0.1553,
+            "z": 7.284,
+            "color": "red"
+          },
+          {
+            "x": 8.2,
+            "y": 0.1553,
+            "z": 7.284,
+            "color": "green"
+          }
+        ],
+        "gearNode": "Gear"
+      },
+      "blend": "art/blender/source/snega.blend"
+    }
+  }
+}
